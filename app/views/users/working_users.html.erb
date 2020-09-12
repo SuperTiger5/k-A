@@ -1,0 +1,24 @@
+<% provide(:title, "出勤社員一覧") %>
+
+  <% if @attendances3.present? %>
+    <h1 class = "text-center">出勤社員一覧</h1>
+    <table class = "table table-condensed table-hover table-bordered" id = "table-users">
+    <thead>
+      <tr>
+        <th class = "text-center"><%= User.human_attribute_name :employee_number %></th>
+        <th class = "text-center"><%= User.human_attribute_name :name %></th>
+      </tr>
+    </thead>
+    
+    <% @attendances3.each do |attendance| %>
+      <tr>
+        <td class = "text-center"><%= User.find(attendance.user_id).employee_number %></td>
+        <td class = "text-center"><%= User.find(attendance.user_id).name %></td>
+      </tr>
+    <% end %>
+  </table>
+  <% else %>
+    <h1 class = "text-center">出勤中の社員はいません</h1>
+  <% end %>
+
+  

@@ -7,13 +7,13 @@
         <%= l(@first_day, format: :middle) %> 時間管理表
         <%= link_to "▶", user_path(date: @first_day.next_month), class: "btn btn-primary btn-next" %>
       </td>
-      <td class = "z">指定勤務時間　<%= format_basic_info(@user.work_time) %></td> 
+      <td class = "z">指定勤務時間　<%= format_basic_info(@user.basic_work_time) %></td> 
       <td class = "z", colspan = "3">基本時間　<%= format_basic_info(@user.basic_time) %></td>
       <td class = "z">初日　<%= l(@first_day, format: :short) %></td>
     </tr>
     
     <tr>
-      <td>所属　<%= @user.department.present? ? @user.department : "未所属" %></td>
+      <td>所属　<%= @user.affiliation.present? ? @user.affiliation : "未所属" %></td>
       <td>氏名　<%= @user.name %></td>
       <td>コード</td>
       <td>0921</td>
@@ -31,12 +31,21 @@
   <table class = "table table-bordered table-condenced table-hover" id = "table-attendances">
     <thead>
       <tr>
-        <th rowspan = "2">日付</th>
-        <th rowspan = "2">曜日</th>
+        <th rowspan = "3">残業申請</th>
+        <th rowspan = "3">日付</th>
+        <th rowspan = "3">曜日</th>
+        <th colspan = "8">【実績】</th>
+        <th colspan = "5">所定外勤務</th>
+      </tr>
+      <tr>
         <th colspan = "3">出社</th>
         <th colspan = "3">退社</th>
         <th rowspan = "2">在社時間</th>
         <th rowspan = "2">備考</th>
+        <th colspan = "2">終了予定時間</th>
+        <th rowspan = "2">時間外勤務</th>
+        <th rowspan = "2">業務処理内容</th>
+        <th rowspan = "2">指示者確認</th>
       </tr>
       <tr>
         <th>時</th>
@@ -45,12 +54,15 @@
         <th>時</th>
         <th>分</th>
         <th></th>
+        <th>時</th>
+        <th>分</th>
       </tr>
     </thead>
     
     <tbody>
       <% @attendances.each do |day| %>
         <tr>
+          <td><%= link_to "残業申請", "#", class: "btn btn-primary" %></td>
           <td><%= l(day.worked_on, format: :short) %></td>
           <td class = "<%= sunday_or_saturday_color(day) %>"><%= $days_of_the_week[day.worked_on.wday] %></td>
           <td><%= day.started_at.hour if day.started_at.present? %></td>
@@ -70,6 +82,11 @@
             <% end %>
           </td>
           <td><%= day.note %></td>
+          <td><%= User.find(day.user_id).designated_work_end_time%></td>
+          <td><%= User.find(day.user_id).designated_work_end_time.min %></td>
+          <td></td>
+          <td></td>
+          <td></td>
         </tr>
       <% end %>
     </tbody>

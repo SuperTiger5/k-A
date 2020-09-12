@@ -8,16 +8,23 @@ class User < ApplicationRecord
   validates :email, presence: true, length: { maximum: 100 },
                     format: { with: VALID_EMAIL_REGEX },
                     uniqueness: true
-  validates :department, length: { in: 2..30 }, allow_blank: true
+  validates :affiliation, length: { in: 2..30 }, allow_blank: true
+  VALID_UID_REGEX = /\A[a-z0-9]+\z/
+  validates :uid, presence: true,
+                  format: { with: VALID_UID_REGEX },
+                  uniqueness: true
+  validates :employee_number, presence: true,
+                              numericality: {only_integer: true}
+  
   validates :basic_time, presence: true
-  validates :work_time, presence: true
+  validates :basic_work_time, presence: true
   has_secure_password
   validates :password, length: { maximum: 10 }, allow_nil: true
   
-  validate :work_time_than_basic_time
+  validate :basic_work_time_than_basic_time
   
-  def work_time_than_basic_time
-      errors.add(:basic_time, "より多い指定勤務時間は無効です") if work_time > basic_time
+  def basic_work_time_than_basic_time
+      errors.add(:basic_time, "より長い指定勤務時間は無効です") if basic_work_time > basic_time
   end
    # 渡された文字列のハッシュ値を返します。
   def User.digest(string)

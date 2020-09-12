@@ -1,10 +1,6 @@
 <% provide(:title, "ユーザー一覧") %>
 <h1 class = "text-center">
-  <% if params[:search] %>
-    検索結果
-  <% else %>
-    ユーザー一覧
-  <% end %>
+  ユーザー一覧
 </h1>
  
 <%= form_tag(users_path, :method => 'get', class: "pull-right") do %>
@@ -18,18 +14,18 @@
     <thead>
       <tr>
         <th><%= User.human_attribute_name :name %></th>
-        <th><%= User.human_attribute_name :department %></th>
+        <th><%= User.human_attribute_name :affiliation %></th>
         <th><%= User.human_attribute_name :basic_time %></th>
-        <th><%= User.human_attribute_name :work_time %></th>
+        <th><%= User.human_attribute_name :basic_work_time %></th>
       </tr>
     </thead>
     
     <% @users.each do |user| %>
       <tr>
         <td><%= link_to user.name, user %></td>
-        <td><%= user.department? ? user.department : "未所属" %></td>
+        <td><%= user.affiliation? ? user.affiliation : "未所属" %></td>
         <td><%= format_basic_info(user.basic_time) %></td>
-        <td><%= format_basic_info(user.work_time) %></td>
+        <td><%= format_basic_info(user.basic_work_time) %></td>
         <td>
           <%= link_to "基本情報編集", edit_basic_info_user_path(user), remote: true, class: "btn btn-success" %>
           <% unless current_user?(user) %>

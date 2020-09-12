@@ -53,7 +53,7 @@ class UsersController < ApplicationController
 
   def update_basic_info
     if @user.update_attributes(basic_info_params)
-      if User.update_all(basic_time: @user.basic_time, work_time: @user.work_time)
+      if User.update_all(basic_time: @user.basic_time, basic_work_time: @user.basic_work_time)
         flash[:success] = "基本情報を更新しました。"
       else
         flash[:danger] = "基本情報を更新できませんでした"
@@ -63,15 +63,20 @@ class UsersController < ApplicationController
     end
     redirect_to users_url
   end
-
+  
+  def working_users
+    attendances1 = Attendance.where(worked_on: Date.current)
+    attendances2 = attendances1.where.not(started_at: nil)
+    @attendances3 = attendances2.where(finished_at: nil).order(:id)
+  end
   private
     
     def user_params
-      params.require(:user).permit(:name, :email, :department, :password, :password_confirmation)
+      params.require(:user).permit(:name, :email, :affiliation, :employee_number, :uid, :basic_work_time, :designated_work_start_time, :designated_work_end_time, :superior, :admin, :password, :password_confirmation)
     end
     
     def basic_info_params
-      params.require(:user).permit(:basic_time, :work_time)
+      params.require(:user).permit(:basic_time, :basic_work_time)
     end
     
     def admin_or_correct_user
