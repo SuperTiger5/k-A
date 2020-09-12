@@ -18,4 +18,6 @@ Rails.application.routes.draw do
     end
     resources :attendances, only: :update
   end
+  
+     post 'import', to: 'users#import', as: 'import'
 end

@@ -21,9 +21,8 @@ class UsersController < ApplicationController
   end
   
   def index
-    @users = User.paginate(page: params[:page], per_page: 20).search(params[:search])
+    @users = User.all
   end
-  
 
   
   def show
@@ -64,6 +63,16 @@ class UsersController < ApplicationController
     redirect_to users_url
   end
   
+  def import
+    if params[:file].blank?
+      flash[:danger] = "CSVファイルが選択されていません。"
+    else
+      User.import(params[:file])
+      flash[:success] = "CSVファイルをインポートしました。"
+    end
+    redirect_to users_url
+  end
+  
   def working_users
     attendances1 = Attendance.where(worked_on: Date.current)
     attendances2 = attendances1.where.not(started_at: nil)
@@ -72,7 +81,7 @@ class UsersController < ApplicationController
   private
     
     def user_params
-      params.require(:user).permit(:name, :email, :affiliation, :employee_number, :uid, :basic_work_time, :designated_work_start_time, :designated_work_end_time, :superior, :admin, :password, :password_confirmation)
+      params.require(:user).permit(:name, :email, :affiliation, :employee_number, :uid, :basic_work_time, :designated_work_start_time, :designated_work_end_time, :password)
     end
     
     def basic_info_params

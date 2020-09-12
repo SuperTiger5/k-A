@@ -4,8 +4,6 @@ User.create!(name: "管理者",
              superior: false,
              uid: "1",
              employee_number: 1,
-             designated_work_start_time,
-             designated_work_end_time,
              password: "password",
              password_confirmation: "password")
 
@@ -15,8 +13,6 @@ User.create!(name: "上長１",
              superior: true,
              uid: "2",
              employee_number: 2,
-             designated_work_start_time,
-             designated_work_end_time,
              password: "password",
              password_confirmation: "password")
              
@@ -26,8 +22,6 @@ User.create!(name: "上長２",
              superior: true,
              uid: "3",
              employee_number: 3,
-             designated_work_start_time,
-             designated_work_end_time,
              password: "password",
              password_confirmation: "password")
              
@@ -37,8 +31,6 @@ User.create!(name: "一般ユーザー１",
              superior: false,
              uid: "4",
              employee_number: 4,
-             designated_work_start_time,
-             designated_work_end_time,
              password: "password",
              password_confirmation: "password")
              
@@ -48,8 +40,6 @@ User.create!(name: "一般ユーザー２",
              superior: false,
              uid: "5",
              employee_number: 5,
-             designated_work_start_time,
-             designated_work_end_time,
              password: "password",
              password_confirmation: "password")
 

@@ -1,43 +1,38 @@
-<% provide(:title, "ユーザー一覧") %>
+<% provide(:title, "ユーザ一覧") %>
 <h1 class = "text-center">
   ユーザー一覧
 </h1>
- 
-<%= form_tag(users_path, :method => 'get', class: "pull-right") do %>
-  <p class = "label-search">ユーザー名検索</p>
-  <%= text_field_tag :search %>
-  <%= submit_tag '検索', :name => nil, class: "btn btn-sm btn-primary pull-right btn-search" %>
-<% end %> 
-<div class = "col-md-10 col-md-offset-1">
-  <%= will_paginate %>
-  <table class = "table table-condensed table-hover" id = "table-users">
-    <thead>
-      <tr>
-        <th><%= User.human_attribute_name :name %></th>
-        <th><%= User.human_attribute_name :affiliation %></th>
-        <th><%= User.human_attribute_name :basic_time %></th>
-        <th><%= User.human_attribute_name :basic_work_time %></th>
-      </tr>
-    </thead>
-    
-    <% @users.each do |user| %>
-      <tr>
-        <td><%= link_to user.name, user %></td>
-        <td><%= user.affiliation? ? user.affiliation : "未所属" %></td>
-        <td><%= format_basic_info(user.basic_time) %></td>
-        <td><%= format_basic_info(user.basic_work_time) %></td>
-        <td>
-          <%= link_to "基本情報編集", edit_basic_info_user_path(user), remote: true, class: "btn btn-success" %>
-          <% unless current_user?(user) %>
-            <%= link_to "削除", user, method: :delete,
-                data: { confirm: "削除してよろしいですか？" },
-                class: "btn btn-danger" %>
-          <% end %>
-        </td>
-      </tr>
-    <% end %>
-  </table>
-  <%= will_paginate %>
-</div>
 
-<div id="edit-basic-info" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>
+<%= form_tag import_path, multipart: true do %>
+  <%= file_field_tag :file %>
+  <%= submit_tag "CSVをインポート", class: "btn btn-primary" %>
+<% end %>
+
+<table class="table">
+  <% @users.each do |user| %>
+    <tr>
+      <td>
+        <%= user.name %><br>
+        <p></p>
+        | <%= link_to "削除", user, method: :delete,
+                            class: "btn btn-primary",
+                            data: { confirm: "削除してもよろしいでしょうか？" } %><br>
+         <p></p>
+         <div class="panel-group">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">
+                  <button type="button" data-toggle="collapse" data-target="#collapse<%= user.id %>" class="btn btn-primary btn-lg">編集</button>
+                </h4>
+              </div>
+              <div id="collapse<%= user.id %>" class="panel-collapse collapse">
+                <%= render 'users/form', {user: user} %>
+            </div>
+          </div>
+      </td>
+    </tr>
+  <% end %>
+</table>
+
+
+
