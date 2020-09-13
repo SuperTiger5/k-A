@@ -64,14 +64,21 @@ class UsersController < ApplicationController
   end
   
   def import
-    if params[:file].blank?
-      flash[:danger] = "CSVファイルが選択されていません。"
+    if params[:csv_file].blank?
+      flash[:danger] = "インポートするCSVファイルを選択してください。"
+      redirect_to users_url
     else
-      User.import(params[:file])
-      flash[:success] = "CSVファイルをインポートしました。"
+      num = User.import(params[:csv_file])
+      if num > 0
+        flash[:success] = "#{num.to_s}件のユーザー情報を追加/更新しました。"
+        redirect_to users_url
+      else
+        flash[:danger] = "読み込みエラーが発生しました。"
+        redirect_to users_url
+      end
     end
-    redirect_to users_url
   end
+
   
   def working_users
     attendances1 = Attendance.where(worked_on: Date.current)

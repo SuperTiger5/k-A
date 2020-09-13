@@ -9,6 +9,7 @@ Rails.application.routes.draw do
   delete '/logout', to: 'sessions#destroy' #ログアウト(セッション削除)
   
   resources :users do
+    collection { post :import }
     member do
       get 'edit_basic_info'
       patch 'update_basic_info'
@@ -18,6 +19,4 @@ Rails.application.routes.draw do
     end
     resources :attendances, only: :update
   end
-  
-     post 'import', to: 'users#import', as: 'import'
 end
