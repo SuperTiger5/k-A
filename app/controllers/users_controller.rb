@@ -79,6 +79,7 @@ class UsersController < ApplicationController
     end
   end
 
+
   
   def working_users
     attendances1 = Attendance.where(worked_on: Date.current)
