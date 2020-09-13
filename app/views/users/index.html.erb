@@ -26,7 +26,8 @@
                 </h4>
               </div>
               <div id="collapse<%= user.id %>" class="panel-collapse collapse">
-                <%= render 'users/form', {user: user} %>
+                <% @user = user %>
+                <%= render 'users/form', {user: @user} %>
             </div>
           </div>
       </td>
