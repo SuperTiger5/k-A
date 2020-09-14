@@ -28,5 +28,6 @@
       <%= f.label :designated_work_end_time, class: "label-#{yield(:class_text)}" %>
       <%= f.time_field :designated_work_end_time, class: "form-control" %>
 
-      <%= f.submit "編集する", class: "btn btn-primary btn-block btn-#{yield(:class_text)}" %>
+      <% x = @user.id.nil? ? "新規作成する" : "更新する" %>
+      <%= f.submit x, class: "btn btn-primary btn-block btn-#{yield(:class_text)}" %>
 <% end %>

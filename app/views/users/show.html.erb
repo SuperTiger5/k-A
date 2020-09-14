@@ -84,10 +84,10 @@
           <td><%= day.note %></td>
           <td>
             <% user = User.find(day.user_id) %>
-            <%= user.designated_work_end_time%>
+            <%= user.designated_work_end_time.hour if user.designated_work_end_time %>
           </td>
           <td>
-            <%= user.designated_work_end_time %>
+            <%= user.designated_work_end_time.min if user.designated_work_end_time %>
           </td>
           <td></td>
           <td></td>
