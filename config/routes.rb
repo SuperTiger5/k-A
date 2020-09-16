@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  get 'places/index'
+
   root 'static_pages#top'
   get '/signup', to: 'users#new'
   get 'working/users', to: 'users#working_users'

@@ -16,16 +16,11 @@ class User < ApplicationRecord
   validates :employee_number, presence: true,
                               numericality: {only_integer: true}
   
-  validates :basic_time, presence: true
+  
   validates :basic_work_time, presence: true
   has_secure_password
   validates :password, length: { maximum: 10 }, allow_nil: true
   
-  validate :basic_work_time_than_basic_time
-  
-  def basic_work_time_than_basic_time
-      errors.add(:basic_time, "より長い指定勤務時間は無効です") if basic_work_time > basic_time
-  end
    # 渡された文字列のハッシュ値を返します。
   def User.digest(string)
     cost = 
@@ -75,12 +70,14 @@ class User < ApplicationRecord
     
     open(file.path, 'r:cp932:utf-8', undef: :replace) do |f|
       csv = CSV.new(f, :headers => :first_row)
-      begin
+      caches = User.all.index_by(&:id)
+      # begin
         csv.each do |row|
           next if row.header_row?
           table = Hash[[row.headers, row.fields].transpose]
           
-          user = find_by(email: table["email"])
+          # user = find_by(email: table["email"])
+          user = caches[table['id']]
           if user.nil?
             user = new
           end
@@ -92,10 +89,15 @@ class User < ApplicationRecord
             imported_num += 1
           end
         end
-      rescue
-      end
+      # rescue
+      # end
     end
     imported_num
+  end
+  
+  def self.updatable_attributes
+    ["name", "email", "password", "admin", "superior", "uid", "employee_number", "affiliation",
+    "basic_work_time", "designated_work_start_time", "designated_work_end_time"]
   end
 
 
