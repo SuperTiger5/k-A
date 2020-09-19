@@ -1,3 +1,5 @@
+<% provide(:class_text, "place") %>
+
 <%= form_with(model: @place, local: true) do |f| %>
       <%= render 'shared/error_messages', obj: @place %>
     
@@ -5,10 +7,10 @@
       <%= f.text_field :number, class: "form-control" %>
 
       <%= f.label :name, class: "label-#{yield(:class_text)}" %>
-      <%= f.email_field :name, class: "form-control" %>
+      <%= f.text_field :name, class: "form-control" %>
       
-      <%= f.label :type, class: "label-#{yield(:class_text)}" %>
-      <%= f.text_field :type, class: "form-control" %>
+      <%= f.label :type_of_place, class: "label-#{yield(:class_text)}" %>
+      <%= f.select :type_of_place, {'出勤': 1, '退勤': 2}, { include_blank: '選択してください'}, { class: 'form-control' , required: true } %>
 
-      <%= f.submit "追加", class: "btn btn-primary btn-block btn-#{yield(:class_text)}" %>
+      <%= f.submit @place.id.nil? ? "登録" : "編集", class: "btn btn-primary btn-block btn-#{yield(:class_text)}" %>
 <% end %>

@@ -1,2 +1,39 @@
-<h1>Places#index</h1>
-<p>Find me in app/views/places/index.html.erb</p>
+<% provide(:title, "ユーザ一覧") %>
+<h1 class = "text-center">
+  拠点一覧
+</h1>
+
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th></th>
+      <th></th>
+      <th><%= Place.human_attribute_name :number %></th>
+      <th><%= Place.human_attribute_name :name %></th>
+      <th><%= Place.human_attribute_name :type_of_place %></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @places.each do |place| %>
+    <tr>
+      <td>
+        <button type="button" data-toggle="collapse" data-target="#collapse<%= place.id %>" class="btn btn-primary">編集</button>
+        <div id="collapse<%= place.id %>" class="panel-collapse collapse">
+          <% @place = place %>
+          <%= render 'places/form' %>
+        </div>
+      <td>
+        <%= link_to "削除", place, method: :delete,
+                            class: "btn btn-primary",
+                            data: { confirm: "削除してもよろしいでしょうか？" } %>
+      </td>
+      <td><%= place.number %></td>
+      <td><%= place.name %></td>
+      <td><%= place.type_of_place == 1 ? "出勤" : "退勤" %></td>
+    </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<%= link_to "拠点情報追加", new_place_path, class: "btn btn-primary btn-lg btn-place" %>
+

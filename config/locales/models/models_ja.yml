@@ -24,3 +24,7 @@ ja:
           finished_at: 退社時刻
           note: 備考
           user: ユーザーID
+        place:
+          name: 拠点名
+          type_of_place: 勤怠種類
+          number: 拠点番号

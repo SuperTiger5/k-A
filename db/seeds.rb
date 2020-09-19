@@ -23,5 +23,13 @@ User.create!(name: "上長2",
              uid: "3",
              employee_number: 3,
              password: "password",
-             password_confirmation: "password")             
+             password_confirmation: "password")
+             
+Place.create!(name: "東京",
+              type_of_place: "出勤",
+              number: 1)
+              
+Place.create!(name: "大阪",
+              type_of_place: "退勤",
+              number: 2)              
 p "Seed作成完了"
