@@ -2,7 +2,7 @@ class UsersController < ApplicationController
   before_action :set_user, only: [:show, :destroy, :edit, :update, :edit_basic_info, :update_basic_info]
   before_action :logged_in_user, only: [:show, :index, :destroy, :edit, :update]
   before_action :admin_user, only: [:index, :destroy, :edit_basic_info, :update_basic_info]
-  before_action :admin_or_correct_user, only: :show
+  before_action :admin_user_admin, only: :show
   before_action :set_one_month, only: :show
   
   def new
@@ -96,7 +96,9 @@ class UsersController < ApplicationController
       params.require(:user).permit(:basic_time, :basic_work_time)
     end
     
-    def admin_or_correct_user
-    redirect_to root_url unless current_user.admin? || @user == current_user
+    def admin_user_admin
+      redirect_to root_url if current_user.admin?
     end
 end
+
+
