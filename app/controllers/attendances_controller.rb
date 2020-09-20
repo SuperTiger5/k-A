@@ -1,7 +1,7 @@
 class AttendancesController < ApplicationController
   include AttendancesHelper
   
-  before_action :set_user, only: [:edit_one_month, :update_one_month]
+  before_action :set_user, only: [:edit_one_month, :update_one_month, :overtime_request]
   before_action :logged_in_user
   before_action :admin_or_correct_user
   before_action :set_one_month, only: :edit_one_month
@@ -9,7 +9,6 @@ class AttendancesController < ApplicationController
   UPDATE_ERROR_MSG = "勤怠登録に失敗しました。やり直してください。"
   
   def update
-    @user = User.find(params[:user_id])
     @attendance = Attendance.find(params[:id])
     if @attendance.started_at.nil?
       if @attendance.update_attributes(started_at: Time.current.change(sec: 0))
@@ -49,7 +48,7 @@ class AttendancesController < ApplicationController
       redirect_to attendances_edit_one_month_user_url(date: params[:date])
   end
   
-  def receive_overtime
+  def overtime_request
   end
 
   
@@ -61,10 +60,12 @@ class AttendancesController < ApplicationController
     
     def admin_or_correct_user
       @user = User.find(params[:user_id]) if @user.blank?
-      unless current_user?(@user) || current_user.admin?
+      if !current_user?(@user) || current_user.admin?
         flash[:danger] = "編集権限がありません"
         redirect_to(root_url)
       end
     end
+    
+    
     
 end

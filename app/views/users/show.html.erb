@@ -24,7 +24,7 @@
 </div>
 
 <div class = "edit-user">
-  <%= link_to "勤怠編集", attendances_edit_one_month_user_path(date: @first_day), remote: true, class: "btn btn-primary" %>
+  <%= link_to "勤怠編集", attendances_edit_one_month_user_path(date: @first_day), class: "btn btn-primary" %>
 </div>
 
 <div>
@@ -61,8 +61,8 @@
     
     <tbody>
       <% @attendances.each do |day| %>
-        <tr>
-          <td><%= link_to "残業申請", "#", class: "btn btn-primary" %></td>
+        <tr>                          
+          <td><%= link_to "残業申請", attendances_overtime_request_user_path(day.user_id), remote: true, class: "btn btn-primary" %></td>
           <td><%= l(day.worked_on, format: :short) %></td>
           <td class = "<%= sunday_or_saturday_color(day) %>"><%= $days_of_the_week[day.worked_on.wday] %></td>
           <td><%= day.started_at.hour if day.started_at.present? %></td>
@@ -107,7 +107,8 @@
   </table>
 </div>
 
-<div id="attendances-edit" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>
+<div id="overtime" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>
+
 
 
 
