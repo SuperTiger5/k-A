@@ -18,12 +18,12 @@ module AttendancesHelper
     format("%i", 15 * (time.min / 15))
   end
   
-  def attendances_invalid?
+  def overtime_attendances_invalid?
     a = true
-      attendances_params.each do |id, item|
-        if item[:started_at].blank? && item[:finished_at].blank?
+      overtime_notice_params.each do |id, item|
+        if item[:overtime_change] == "1" && item[:overtime_check].in?(["承認", "否認"])
           next
-        elsif item[:started_at].blank? || item[:finished_at].blank?
+        else
           a = false
           break
         end

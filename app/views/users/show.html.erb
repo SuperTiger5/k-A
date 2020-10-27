@@ -33,7 +33,7 @@
   <div>【勤怠変更申請のお知らせ】</div>
   <div>【残業申請のお知らせ】
     <% attendances = Attendance.where(overtime_request: "1", overtime_superior_confirmation: current_user) %>
-    <% if attendances.count > 0 && %>
+    <% if attendances.count > 0 %>
       <% num = attendances.count %>
       <%= link_to "通知が#{num}件あります。", edit_overtime_notice_user_attendances_path(@user), class: "overtime-notice", remote: true %>
     <% end %>
