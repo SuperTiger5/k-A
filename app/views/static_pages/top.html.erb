@@ -1,6 +1,10 @@
 <% provide(:title, "top") %>
-<div class = "text-center jumbotron">
-  <h1>勤怠システム</h1>
-  <%= link_to "ログイン", login_path, class: "btn btn-lg btn-primary" %>
-  <p>アカウント作成は<%= link_to "こちら", signup_path %>から</p>
-</div>
+<% unless logged_in? %>
+  <div class = "text-center jumbotron">
+    <h1>勤怠システム</h1>
+    <%= link_to "ログイン", login_path, class: "btn btn-lg btn-primary" %>
+    <p>アカウント作成は<%= link_to "こちら", signup_path %>から</p>
+  </div>
+<% else %>
+  <h1 class="text-center">すでにログインしています。</h1>
+<% end %>

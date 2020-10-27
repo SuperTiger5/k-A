@@ -22,8 +22,12 @@ ja:
           worked_on: 日付
           started_at: 出社時刻
           finished_at: 退社時刻
-          note: 備考
+          work_details: 業務処理内容
           user: ユーザーID
+          overtime_request: 残業申請
+          overtime_approval: 残業承認
+          overtime_superior_confirmation: 指示者確認㊞
+          scheduled_end_time: 終了予定時間
         place:
           name: 拠点名
           type_of_place: 勤怠種類

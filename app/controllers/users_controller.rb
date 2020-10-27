@@ -79,8 +79,6 @@ class UsersController < ApplicationController
     end
   end
 
-
-  
   def working_users
     attendances1 = Attendance.where(worked_on: Date.current)
     attendances2 = attendances1.where.not(started_at: nil)

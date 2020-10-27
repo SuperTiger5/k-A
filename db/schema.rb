@@ -17,7 +17,16 @@ ActiveRecord::Schema.define(version: 20200919155909) do
     t.datetime "started_at"
     t.datetime "finished_at"
     t.string "note"
+    t.string "work_details"
     t.integer "user_id"
+    t.string "overtime_request"
+    t.string "overtime_status"
+    t.string "overtime_check", default: "申請中"
+    t.string "overtime_approval"
+    t.string "overtime_change"
+    t.string "next_day"
+    t.string "overtime_superior_confirmation"
+    t.datetime "scheduled_end_time"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_attendances_on_user_id"
@@ -42,10 +51,10 @@ ActiveRecord::Schema.define(version: 20200919155909) do
     t.string "affiliation"
     t.boolean "superior", default: false
     t.string "uid"
-    t.datetime "basic_work_time", default: "2020-09-09 08:00:00"
+    t.datetime "basic_work_time", default: "2020-09-09 23:00:00"
     t.string "employee_number"
-    t.datetime "designated_work_start_time"
-    t.datetime "designated_work_end_time"
+    t.datetime "designated_work_start_time", default: "2020-10-10 00:00:00"
+    t.datetime "designated_work_end_time", default: "2020-10-10 09:00:00"
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 

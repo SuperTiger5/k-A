@@ -3,12 +3,17 @@
   <table class = "table table-bordered table-condensed user-table">
     <tr>
       <td>
-        <%= link_to "◀", user_path(date: @first_day.prev_month), class: "btn btn-primary btn-prev" %>
+        <%= link_to "←", user_path(date: @first_day.prev_month), class: "btn btn-primary btn-prev" %>
         <%= l(@first_day, format: :middle) %> 時間管理表
-        <%= link_to "▶", user_path(date: @first_day.next_month), class: "btn btn-primary btn-next" %>
+        <%= link_to "→", user_path(date: @first_day.next_month), class: "btn btn-primary btn-next" %>
       </td>
-      <td>指定勤務時間　<%= format_basic_info(@user.basic_work_time) %></td> 
-      <td colspan = "3"></td>
+      <td>
+        指定勤務開始時間　<%= l(@user.designated_work_start_time, format: :time) %><br>
+        指定勤務終了時間　<%= l(@user.designated_work_end_time, format: :time) %>
+      </td> 
+      <td colspan = "3">
+        基本時間　<%= l(@user.basic_work_time, format: :time) %>
+      </td>
       <td>初日　<%= l(@first_day, format: :short) %></td>
     </tr>
     
@@ -23,6 +28,18 @@
   </table>
 </div>
 
+<% if current_user.superior?  %>
+  <div>【所属長承認申請のお知らせ】</div>
+  <div>【勤怠変更申請のお知らせ】</div>
+  <div>【残業申請のお知らせ】
+    <% attendances = Attendance.where(overtime_request: "1", overtime_superior_confirmation: current_user) %>
+    <% if attendances.count > 0 && %>
+      <% num = attendances.count %>
+      <%= link_to "通知が#{num}件あります。", edit_overtime_notice_user_attendances_path(@user), class: "overtime-notice", remote: true %>
+    <% end %>
+  </div>
+<% end %>
+
 <div class = "edit-user">
   <%= link_to "勤怠編集", attendances_edit_one_month_user_path(date: @first_day), class: "btn btn-primary" %>
 </div>
@@ -31,21 +48,21 @@
   <table class = "table table-bordered table-condenced table-hover" id = "table-attendances">
     <thead>
       <tr>
-        <th rowspan = "3">残業申請</th>
-        <th rowspan = "3">日付</th>
-        <th rowspan = "3">曜日</th>
-        <th colspan = "8">【実績】</th>
-        <th colspan = "5">所定外勤務</th>
+        <th rowspan="3">残業申請</th>
+        <th rowspan="3">日付</th>
+        <th rowspan="3">曜日</th>
+        <th colspan="8">【実績】</th>
+        <th colspan="5">所定外勤務</th>
       </tr>
       <tr>
-        <th colspan = "3">出社</th>
-        <th colspan = "3">退社</th>
-        <th rowspan = "2">在社時間</th>
-        <th rowspan = "2">備考</th>
-        <th colspan = "2">終了予定時間</th>
-        <th rowspan = "2">時間外勤務</th>
-        <th rowspan = "2">業務処理内容</th>
-        <th rowspan = "2">指示者確認</th>
+        <th colspan="3">出社</th>
+        <th colspan="3">退社</th>
+        <th rowspan="2">在社時間</th>
+        <th rowspan="2">備考</th>
+        <th colspan="2">終了時間</th>
+        <th rowspan="2">時間外残業</th>
+        <th rowspan="2">業務処理内容</th>
+        <th rowspan="2">指示者確認㊞</th>
       </tr>
       <tr>
         <th>時</th>
@@ -62,7 +79,7 @@
     <tbody>
       <% @attendances.each do |day| %>
         <tr>                          
-          <td><%= link_to "残業申請", attendances_overtime_request_user_path(day.user_id), remote: true, class: "btn btn-primary" %></td>
+          <td><%= link_to "残業申請", edit_overtime_request_user_attendance_path(@user, day), remote: true, class: "btn btn-primary" %></td>
           <td><%= l(day.worked_on, format: :short) %></td>
           <td class = "<%= sunday_or_saturday_color(day) %>"><%= $days_of_the_week[day.worked_on.wday] %></td>
           <td><%= day.started_at.hour if day.started_at.present? %></td>
@@ -82,16 +99,16 @@
             <% end %>
           </td>
           <td><%= day.note %></td>
+          <td><%= day.scheduled_end_time.hour if day.overtime_approval == "1" %></td>
+          <td><%= day.scheduled_end_time.min if day.overtime_approval == "1" %></td>
           <td>
-            <% user = User.find(day.user_id) %>
-            <%= user.designated_work_end_time.hour if user.designated_work_end_time %>
+            <% if day.overtime_approval == "1" %>
+              <% overtime = format_basic_info(day.scheduled_end_time).to_f - format_basic_info(@user.designated_work_end_time).to_f %>
+              <%= overtime %>
+            <% end %>
           </td>
-          <td>
-            <%= user.designated_work_end_time.min if user.designated_work_end_time %>
-          </td>
-          <td></td>
-          <td></td>
-          <td></td>
+          <td><%= day.work_details %></td>
+          <td><%= day.overtime_status %></td>
         </tr>
       <% end %>
     </tbody>
@@ -107,8 +124,5 @@
   </table>
 </div>
 
-<div id="overtime" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>
-
-
-
-
+<div id="edit-overtime-request" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>
+<div id="edit-overtime-notice" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>

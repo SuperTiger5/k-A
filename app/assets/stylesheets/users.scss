@@ -1,8 +1,12 @@
 /* ユーザー情報テーブル */
 
 .user-table {
-  .z {
-    vertical-align: bottom; 
+  td {
+    vertical-align: bottom !important; 
+    text-align: center;
+  }
+  tr {
+    border-bottom: 3px double #ccc;
   }
 }
 
@@ -109,3 +113,18 @@ input[type = "time"] {
   padding-left: 10px;
   padding-bottom: 10px;
 }
+
+.overtime-notice {
+  color: #f96250;
+  border: solid 2px #f96250;
+  border-color: #f96250;
+  font-weight: bold;
+}
+
+.overtime-notice:hover {
+  border: solid 2px #f96250;
+  color: #f96250;
+  font-weight: bold;
+  text-decoration: none;
+}
+

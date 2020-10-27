@@ -25,6 +25,13 @@ User.create!(name: "上長2",
              password: "password",
              password_confirmation: "password")
              
+User.create!(name: "サンプル",
+             email: "sample@email.com",
+             uid: "4",
+             employee_number: 4,
+             password: "password",
+             password_confirmation: "password")
+             
 Place.create!(name: "東京",
               type_of_place: "出勤",
               number: 1)
