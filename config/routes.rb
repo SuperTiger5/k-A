@@ -14,6 +14,7 @@ Rails.application.routes.draw do
   resources :users do
     collection { post :import }
     member do
+      get 'show_check'
       get 'edit_basic_info'
       patch 'update_basic_info'
       get 'attendances/edit_one_month'

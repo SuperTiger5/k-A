@@ -9,7 +9,7 @@ class CreateAttendances < ActiveRecord::Migration[5.1]
       t.references :user, foreign_key: true
       t.string :overtime_request
       t.string :overtime_status
-      t.string :overtime_check, default: "申請中"
+      t.string :overtime_check
       t.string :overtime_approval
       t.string :overtime_change
       t.string :next_day

@@ -9,7 +9,7 @@
     <div class="modal-body">
       <%= form_with(model: @user, url: update_overtime_notice_user_attendances_path(@user), local: true, method: :patch) do |f| %>
       <% @attendances.each do |day| %>
-      <%= f.fields_for 'attendances[]', day do |attendance| %>
+      <%= f.fields_for 'attendances[]', day do |at| %>
         <table class="table table-bordered table-condensed table-striped">
           <thead>
             <tr>
@@ -37,10 +37,10 @@
                </td>
               <td><%= day.work_details %></td>
               <td>
-                <%= attendance.select :overtime_check, ['なし', '申請中', '承認', '否認'], {include_blank: true}, class: "form_control" %>
+                <%= at.select :overtime_check, ['なし', '申請中', '承認', '否認'], {include_blank: true}, class: "form_control" %>
               </td>
-              <td><%= attendance.check_box :overtime_change %></td>
-              <td><%= link_to "確認", day.user_id, class: "btn btn-primary" %></td>
+              <td><%= at.check_box :overtime_change %></td>
+              <td><%= link_to "確認", show_check_user_path(day.user_id), class: "btn btn-primary" %></td>
             </tr>
           </tbody>
         </table>

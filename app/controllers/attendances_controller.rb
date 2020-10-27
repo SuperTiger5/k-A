@@ -70,6 +70,7 @@ class AttendancesController < ApplicationController
   end
   
   def edit_overtime_notice
+    @overtime_checks = ["申請中", "承認", "否認"]
     @attendances = Attendance.where(overtime_request: "1", overtime_superior_confirmation: current_user.id)
   end
   

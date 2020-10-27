@@ -3,9 +3,7 @@
   <table class = "table table-bordered table-condensed user-table">
     <tr>
       <td>
-        <%= link_to "←", user_path(date: @first_day.prev_month), class: "btn btn-primary btn-prev" %>
         <%= l(@first_day, format: :middle) %> 時間管理表
-        <%= link_to "→", user_path(date: @first_day.next_month), class: "btn btn-primary btn-next" %>
       </td>
       <td>
         指定勤務開始時間　<%= l(@user.designated_work_start_time, format: :time) %><br>
@@ -26,22 +24,6 @@
       <td>締め　<%= l(@last_day, format: :short) %></td>
     </tr>
   </table>
-</div>
-
-<% if current_user.superior?  %>
-  <div>【所属長承認申請のお知らせ】</div>
-  <div>【勤怠変更申請のお知らせ】</div>
-  <div>【残業申請のお知らせ】
-    <% attendances = Attendance.where(overtime_request: "1", overtime_superior_confirmation: current_user) %>
-    <% if attendances.count > 0 && %>
-      <% num = attendances.count %>
-      <%= link_to "通知が#{num}件あります。", edit_overtime_notice_user_attendances_path(@user), class: "overtime-notice", remote: true %>
-    <% end %>
-  </div>
-<% end %>
-
-<div class = "edit-user">
-  <%= link_to "勤怠編集", attendances_edit_one_month_user_path(date: @first_day), class: "btn btn-primary" %>
 </div>
 
 <div>
@@ -79,16 +61,12 @@
     <tbody>
       <% @attendances.each do |day| %>
         <tr>                          
-          <td><%= link_to "残業申請", edit_overtime_request_user_attendance_path(@user, day), remote: true, class: "btn btn-primary" %></td>
+          <td></td>
           <td><%= l(day.worked_on, format: :short) %></td>
           <td class = "<%= sunday_or_saturday_color(day) %>"><%= $days_of_the_week[day.worked_on.wday] %></td>
           <td><%= day.started_at.hour if day.started_at.present? %></td>
           <td><%= format_minute_quarter(day.started_at) if day.started_at.present? %></td>
-          <td class = "text-center">
-            <% if btn_text = attendance_state(day) %>
-              <%= link_to "#{btn_text}", user_attendance_path(@user, day), method: :patch, class: "btn btn-default btn-block btn-secondary btn-attendance" %>
-            <% end %>
-          </td>
+          <td class = "text-center"></td>
           <td><%= day.finished_at.hour if day.finished_at.present? %></td>
           <td><%= format_minute_quarter(day.finished_at) if day.finished_at.present? %></td>
           <td></td>
@@ -99,19 +77,15 @@
             <% end %>
           </td>
           <td><%= day.note %></td>
-          <td><%= day.scheduled_end_time.hour if day.overtime_approval == "1" %></td>
-          <td><%= day.scheduled_end_time.min if day.overtime_approval == "1" %></td>
+          <td><%= day.scheduled_end_time.hour if day.scheduled_end_time.present? %></td>
+          <td><%= day.scheduled_end_time.min if day.scheduled_end_time.present? %></td>
           <td>
-            <% if day.overtime_approval == "1" %>
+              <% if day.scheduled_end_time.present? %>
               <% overtime = format_basic_info(day.scheduled_end_time).to_f - format_basic_info(@user.designated_work_end_time).to_f %>
               <%= overtime %>
-            <% end %>
+              <% end %>
           </td>
-          <td>
-            <% if day.overtime_approval == "1" %>
-              <%= day.work_details %>
-            <% end %>
-            </td>
+          <td><%= day.work_details %></td>
           <td><%= day.overtime_status %></td>
         </tr>
       <% end %>
@@ -127,6 +101,3 @@
     </tfoot>
   </table>
 </div>
-
-<div id="edit-overtime-request" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>
-<div id="edit-overtime-notice" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>

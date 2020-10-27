@@ -21,7 +21,7 @@ ActiveRecord::Schema.define(version: 20200919155909) do
     t.integer "user_id"
     t.string "overtime_request"
     t.string "overtime_status"
-    t.string "overtime_check", default: "申請中"
+    t.string "overtime_check"
     t.string "overtime_approval"
     t.string "overtime_change"
     t.string "next_day"
