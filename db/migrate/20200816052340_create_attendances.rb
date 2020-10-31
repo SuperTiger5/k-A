@@ -6,6 +6,7 @@ class CreateAttendances < ActiveRecord::Migration[5.1]
       t.datetime :finished_at
       t.string :note
       t.string :work_details
+      t.string :work_details_temporary
       t.references :user, foreign_key: true
       t.string :overtime_request
       t.string :overtime_status
@@ -13,8 +14,13 @@ class CreateAttendances < ActiveRecord::Migration[5.1]
       t.string :overtime_approval
       t.string :overtime_change
       t.string :next_day
+      t.string :next_day_one_month
       t.string :overtime_superior_confirmation
+      t.string :one_month_superior_confirmation
+      t.string :edit_one_month_request
+      t.string :edit_one_month_approval
       t.datetime :scheduled_end_time
+      t.datetime :scheduled_end_time_temporary
       t.timestamps
     end
   end

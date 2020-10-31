@@ -7,7 +7,7 @@ User.create!(name: "管理者",
              password: "password",
              password_confirmation: "password")
 
-User.create!(name: "上長１",
+User.create!(name: "上長1",
              email: "superior1@email.com",
              admin: false,
              superior: true,
@@ -25,10 +25,17 @@ User.create!(name: "上長2",
              password: "password",
              password_confirmation: "password")
              
-User.create!(name: "サンプル",
+User.create!(name: "サンプル1",
              email: "sample@email.com",
              uid: "4",
              employee_number: 4,
+             password: "password",
+             password_confirmation: "password")
+             
+User.create!(name: "サンプル2",
+             email: "sample2@email.com",
+             uid: "5",
+             employee_number: 5,
              password: "password",
              password_confirmation: "password")
              

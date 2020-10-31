@@ -17,8 +17,6 @@ Rails.application.routes.draw do
       get 'show_check'
       get 'edit_basic_info'
       patch 'update_basic_info'
-      get 'attendances/edit_one_month'
-      patch 'attendances/update_one_month'
     end
     resources :attendances, only: :update do
       member do
@@ -28,6 +26,10 @@ Rails.application.routes.draw do
       collection do
         get 'edit_overtime_notice'
         patch 'update_overtime_notice'
+        get 'edit_one_month_request'
+        patch 'update_one_month_request'
+        get 'edit_one_month_notice'
+        patch 'update_one_month_notice'
       end
     end
   end

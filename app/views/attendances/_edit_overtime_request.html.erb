@@ -10,21 +10,21 @@
       <%= form_with(model: @attendance, url: update_overtime_request_user_attendance_path(@user, @attendance), method: :patch, local: true, method: :patch) do |f| %>
         <table class="table table-bordered table-condensed table-striped">
           <thead>
-            <th>日付</th>
-            <th>曜日</th>
-            <th>終了予定時間</th>
-            <th>翌日</th>
-            <th>業務処理内容</th>
-            <th>指示者確認㊞</th>
+            <th class="text-center">日付</th>
+            <th class="text-center">曜日</th>
+            <th class="text-center">終了予定時間</th>
+            <th class="text-center">翌日</th>
+            <th class="text-center">業務処理内容</th>
+            <th class="text-center">指示者確認㊞</th>
           </thead>
         
           <tbody>
-              <td><%= l(@attendance.worked_on, format: :short) %></td>
-              <td><%= $days_of_the_week[@attendance.worked_on.wday] %></td>
-              <td><%= f.time_select :scheduled_end_time, minute_step: 15 %></td>
-              <td><%= f.check_box :next_day %></td>
-              <td><%= f.text_field :work_details, class: "form_control" %></td>
-              <td><%= f.collection_select :overtime_superior_confirmation, @superiors, :id, :name, prompt: "選択してください" %></td>
+              <td class="text-center"><%= l(@attendance.worked_on, format: :short) %></td>
+              <td class="text-center"><%= $days_of_the_week[@attendance.worked_on.wday] %></td>
+              <td class="text-center"><%= f.time_select :scheduled_end_time_temporary, include_blank: true, minute_step: 15 %></td>
+              <td class="text-center"><%= f.check_box :next_day %></td>
+              <td class="text-center"><%= f.text_field :work_details_temporary, class: "form_control" %></td>
+              <td class="text-center"><%= f.collection_select :overtime_superior_confirmation, @superiors, :id, :name, prompt: "選択してください" %></td>
           </tbody>
         </table>
           <%= f.submit "変更を送信する", class: "btn btn-primary btn-block" %>

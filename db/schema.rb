@@ -18,6 +18,7 @@ ActiveRecord::Schema.define(version: 20200919155909) do
     t.datetime "finished_at"
     t.string "note"
     t.string "work_details"
+    t.string "work_details_temporary"
     t.integer "user_id"
     t.string "overtime_request"
     t.string "overtime_status"
@@ -25,8 +26,13 @@ ActiveRecord::Schema.define(version: 20200919155909) do
     t.string "overtime_approval"
     t.string "overtime_change"
     t.string "next_day"
+    t.string "next_day_one_month"
     t.string "overtime_superior_confirmation"
+    t.string "one_month_superior_confirmation"
+    t.string "edit_one_month_request"
+    t.string "edit_one_month_approval"
     t.datetime "scheduled_end_time"
+    t.datetime "scheduled_end_time_temporary"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_attendances_on_user_id"

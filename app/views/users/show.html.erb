@@ -41,7 +41,9 @@
 <% end %>
 
 <div class = "edit-user">
-  <%= link_to "勤怠編集", attendances_edit_one_month_user_path(date: @first_day), class: "btn btn-primary" %>
+  <%= link_to "勤怠を編集", edit_one_month_request_user_attendances_path(@user, date: @first_day), class: "btn btn-primary btn-x" %>
+  <%= link_to "CSVを出力", "#", class: "btn btn-primary btn-x" %><br>
+  <%= link_to "勤怠修正ログ（承認済み）", "#", class: "btn btn-primary btn-x" %>
 </div>
 
 <div>
@@ -79,7 +81,11 @@
     <tbody>
       <% @attendances.each do |day| %>
         <tr>                          
-          <td><%= link_to "残業申請", edit_overtime_request_user_attendance_path(@user, day), remote: true, class: "btn btn-primary" %></td>
+          <td>
+            <% if current_user?(@user) %>
+              <%= link_to "残業申請", edit_overtime_request_user_attendance_path(@user, day), remote: true, class: "btn btn-primary" %>
+            <% end %>
+          </td>
           <td><%= l(day.worked_on, format: :short) %></td>
           <td class = "<%= sunday_or_saturday_color(day) %>"><%= $days_of_the_week[day.worked_on.wday] %></td>
           <td><%= day.started_at.hour if day.started_at.present? %></td>
@@ -99,19 +105,10 @@
             <% end %>
           </td>
           <td><%= day.note %></td>
-          <td><%= day.scheduled_end_time.hour if day.overtime_approval == "1" %></td>
-          <td><%= day.scheduled_end_time.min if day.overtime_approval == "1" %></td>
-          <td>
-            <% if day.overtime_approval == "1" %>
-              <% overtime = format_basic_info(day.scheduled_end_time).to_f - format_basic_info(@user.designated_work_end_time).to_f %>
-              <%= overtime %>
-            <% end %>
-          </td>
-          <td>
-            <% if day.overtime_approval == "1" %>
-              <%= day.work_details %>
-            <% end %>
-            </td>
+          <td><%= day.scheduled_end_time.hour if day.scheduled_end_time.present? %></td>
+          <td><%= day.scheduled_end_time.min if day.scheduled_end_time.present? %></td>
+          <td><%= overtime_status(day.scheduled_end_time, @user.designated_work_end_time, @user.designated_work_start_time, @user, day) if day.scheduled_end_time %></td>
+          <td><%= day.work_details %></td>
           <td><%= day.overtime_status %></td>
         </tr>
       <% end %>
@@ -119,8 +116,22 @@
     
     <tfoot>
       <tr>
-        <td colspan = "2"></td>
-        <td colspan = "6"><%=  format("%.2f", @total_working_times.to_f)%></td>
+        <td rowspan="2"></td>
+        <td colspan="2">累計日数</td>
+        <td colspan="5"></td>
+        <td colspan="2">総合勤務時間</td>
+        <td colspan="2">累計在社時間</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td rowspan="2"></td>
+      </tr>
+      <tr>
+        <td colspan="2"><%= @attendances.count %></td>
+        <td colspan="5"></td>
+        <td colspan="2"><%= @total_working_times %></td>
+        <td colspan="2"></td>
+        <td></td>
         <td></td>
         <td></td>
       </tr>

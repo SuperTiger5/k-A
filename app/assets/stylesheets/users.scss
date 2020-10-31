@@ -2,7 +2,7 @@
 
 .user-table {
   td {
-    vertical-align: bottom !important; 
+    vertical-align: center !important; 
     text-align: center;
   }
   tr {
@@ -33,12 +33,12 @@
 
 #table-attendances {
   th {
-    vertical-align: center;
+    vertical-align: middle;
     text-align: center;
   } 
 
   td{
-    vertical-align: center;
+    vertical-align: middle !important;
     text-align: center;  
   }
 }
@@ -126,5 +126,9 @@ input[type = "time"] {
   color: #f96250;
   font-weight: bold;
   text-decoration: none;
+}
+
+.btn-x {
+  margin-top: 5px;
 }
 
