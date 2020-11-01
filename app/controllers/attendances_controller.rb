@@ -3,7 +3,8 @@ class AttendancesController < ApplicationController
 
   before_action :set_user_in_attendance, only: [:update, :edit_overtime_request, :update_overtime_request,
                                                 :edit_overtime_notice, :update_overtime_request,
-                                                :edit_one_month_request, :update_one_month_request]
+                                                :edit_one_month_request, :update_one_month_request,
+                                                :edit_one_month_notice, :update_one_month_notice]
   before_action :set_one_attendance, only: [:edit_overtime_request, :update_overtime_request]
   before_action :logged_in_user
   before_action :only_superior, only:[:edit_overtime_notice, :update_overtime_notice]
@@ -33,15 +34,13 @@ class AttendancesController < ApplicationController
     @superiors = User.where(superior: true).where.not(id: current_user)
   end
   
+  #まとめ更新のときにはtime_selectよりtime_field
   def update_one_month_request
     ActiveRecord::Base.transaction do
       if one_month_invalid?
-        edit_one_month_params.each do |id, item|
-          attendance = Attendance.find(id)
-          attendance.update_attributes!(edit_one_month_request: "1")
-        end
+        one_month_blank_column
         flash[:success] = "勤怠変更申請を送信しました" 
-        redirect_to current_user
+        redirect_to user_url(current_user, date: params[:date])
       else
         flash[:danger] = "無効な入力データがあった為、送信をキャンセルしました。"
         redirect_to edit_one_month_request_user_attendances_url(date: params[:date])
@@ -52,8 +51,16 @@ class AttendancesController < ApplicationController
       redirect_to edit_one_month_request_user_attendances_url(date: params[:date])
   end
   
+  def edit_one_month_notice
+    @attendances = Attendance.where(edit_one_month_request: "1", one_month_superior_confirmation: current_user)
+  end
+  
+  def update_one_month_notice
+    
+  end
+  
   def edit_overtime_request
-    @superiors = User.where(superior: true).where.not(id: @user)
+    @superiors = User.where(superior: true).where.not(id: current_user)
   end
 
   def update_overtime_request
@@ -71,7 +78,7 @@ class AttendancesController < ApplicationController
         flash[:success] = "残業申請しました。"
       end
     end
-    redirect_to current_user
+    redirect_to user_url(current_user, date: @attendance.worked_on.beginning_of_month)
   end
   
   def edit_overtime_notice
@@ -97,7 +104,7 @@ class AttendancesController < ApplicationController
                                          overtime_status: "#{current_user.name}から残業が承認されました。")
                 else
                   flash[:danger] = "残業申請の時間がおかしいです。指示者確認を否認にチェックしてください。"
-                  redirect_to current_user and return
+                  redirect_to user_url(current_user) and return
                 end
               elsif item[:overtime_check] == "否認"
                 day.update_attributes!(item)
@@ -116,11 +123,11 @@ class AttendancesController < ApplicationController
       else
         flash[:danger] = "無効な入力データがあった為、変更をキャンセルしました。(チェックがない場合と指示者確認で申請中、またはなしにされた場合は更新されません。)"
       end
-      redirect_to current_user and return
+      redirect_to user_url(current_user) and return
     end
   rescue ActiveRecord::RecordInvalid
       flash[:danger] = "無効な入力データがあった為、変更をキャンセルしました。"
-      redirect_to current_user and return
+      redirect_to user_url(current_user) and return
   end
   private
   
@@ -141,7 +148,11 @@ class AttendancesController < ApplicationController
     end
     
     def edit_one_month_params
-      params.require(:user).permit(attendances: [:started_at, :finished_at, :note, :one_month_superior_confirmation, :next_day_one_month])[:attendances]
+      params.require(:user).permit(attendances: [:started_at_temporary, :finished_at_temporary, :note_temporary, :one_month_superior_confirmation, :next_day_one_month])[:attendances]
+    end
+    
+    def one_monce_notice_params
+      params.require(:user).permit(attendances: [:one_month_check, :one_month_change])[:attendances]
     end
     
     def only_superior

@@ -43,7 +43,7 @@
                 <%= at.select :overtime_check, ['なし', '申請中', '承認', '否認'], class: "form_control" %>
               </td>
               <td class="text-center"><%= at.check_box :overtime_change %></td>
-              <td class="text-center"><%= link_to "確認", show_check_user_path(day.user_id), class: "btn btn-primary" %></td>
+              <td class="text-center"><%= link_to "確認", show_check_user_path(day.user_id, date: day.worked_on.beginning_of_month), class: "btn btn-primary" %></td>
             </tr>
           </tbody>
         </table>

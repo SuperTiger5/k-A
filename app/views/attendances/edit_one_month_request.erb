@@ -1,6 +1,7 @@
 <% provide(:title, @user.name) %>
 <%= form_with(model: @user, url: update_one_month_request_user_attendances_path(date: @first_day), local: true, method: :patch) do |f| %>
 <div>
+  <h1 class="text-center">勤怠編集</h1>
   <table class = "table table-bordered table-condencd table-hover" id = "attendances-edit">
     <thead>
       <tr>
@@ -23,16 +24,16 @@
             <td class = "<%= sunday_or_saturday_color(day) %>">
               <%= $days_of_the_week[day.worked_on.wday] %>
             </td>
-            <td><%= attendance.time_field :started_at, include_blank: true, class: "form-control" %></td>
-            <td><%= attendance.time_field :finished_at, include_blank: true, class: "form-control" %></td>
+            <td><%= attendance.time_field :started_at_temporary, include_blank: true, class: "form-control" %></td>
+            <td><%= attendance.time_field :finished_at_temporary, include_blank: true, class: "form-control" %></td>
             <td><%= attendance.check_box :next_day_one_month %></td>
             <td>
               <% if day.started_at.present? && day.finished_at.present? %>
                 <%= working_times(day.started_at, day.finished_at) %>
               <% end %>
             </td>
-            <td><%= attendance.text_field :note, placeholder: "入力必須", class: "form-control" %></td>
-            <td><%= attendance.collection_select :one_month_superior_confirmation, @superiors, :id, :name, prompt: "選択してください" %></td>
+            <td><%= attendance.text_field :note_temporary, placeholder: "入力必須", class: "form-control" %></td>
+            <td><%= attendance.collection_select :one_month_superior_confirmation, @superiors, :id, :name, prompt: "選択してください", class: "form-control" %></td>
           </tr>
           <% end %>
         <% end %>
@@ -43,6 +44,6 @@
 
 <div class = "text-center">
   <%= link_to "キャンセル", user_path(@user, date: @first_day), class: "btn btn-lg btn-default edit-one-month" %>
-  <%= f.submit "編集を保存する", class: "btn btn-lg btn-default edit-one-month" %>
+  <%= f.submit "勤怠編集を申請する", class: "btn btn-lg btn-default edit-one-month" %>
 </div>
 <% end %>

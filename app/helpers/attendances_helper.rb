@@ -74,7 +74,7 @@ module AttendancesHelper
         overtime = 24 - format_basic_info(dend).to_f + format_basic_info(sc).to_f
         return format("%.2f", overtime)
       else
-        overtime = "翌日の出勤時間以降までの残業は無効です。"
+        overtime = "残業時間が翌日の出勤時間を越してます。"
         return overtime
       end
     end
@@ -93,19 +93,60 @@ module AttendancesHelper
       return a
   end
   
+  #まとめ更新のときにはtime_selectよりtime_field
+  #if item[:note]と if item[:note].present?は別
   def one_month_invalid?
     a = true
     edit_one_month_params.each do |id, item|
-      if item[:started_at].present?
-        next
+      if item[:next_day_one_month] == "0"
+        if item[:started_at_temporary].present? && item[:finished_at_temporary].present? && item[:note_temporary].present? && item[:one_month_superior_confirmation].present?
+            if item[:started_at_temporary] < item[:finished_at_temporary]
+              next
+            else
+              a = false
+            end
+        elsif item[:started_at_temporary].blank? && item[:finished_at_temporary].blank? && item[:note_temporary].blank? && item[:one_month_superior_confirmation].blank?
+          next
+        else
+          a = false
+          break
+        end
       else
-        a = false
-        break
+        if item[:started_at_temporary].present? && item[:finished_at_temporary].present? && item[:note_temporary].present? && item[:one_month_superior_confirmation].present?
+          if item[:finished_at_temporary] < item[:started_at_temporary]
+            next
+          else
+            a = false
+            break
+          end
+        else
+          a = false
+          break
+        end
       end
     end
     return a
   end
   
-end
-
+  def one_month_blank_column
+    edit_one_month_params.each do |id, item|
+      attendance = Attendance.find(id)
+      if item[:next_day_one_month] == "0"
+        if item[:started_at_temporary].blank? && item[:finished_at_temporary].blank? && item[:note_temporary].blank? && item[:one_month_superior_confirmation].blank?
+            next
+        elsif item[:started_at_temporary].present? && item[:finished_at_temporary].present? && item[:note_temporary].present? && item[:one_month_superior_confirmation].present?
+            attendance.update_attributes!(item)
+            attendance.update_attributes!(edit_one_month_request: "1",
+                                          one_month_status: "#{User.find(item[:one_month_superior_confirmation]).name}に勤怠編集申請中。"
+                                          )
+        end
+      else
+            attendance.update_attributes!(item)
+            attendance.update_attributes!(edit_one_month_request: "1",
+                                          one_month_status: "#{User.find(item[:one_month_superior_confirmation]).name}に勤怠編集申請中。"
+                                          )
+      end
+    end
+  end
   
+end

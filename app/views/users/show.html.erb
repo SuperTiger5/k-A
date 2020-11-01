@@ -30,12 +30,18 @@
 
 <% if current_user.superior?  %>
   <div>【所属長承認申請のお知らせ】</div>
-  <div>【勤怠変更申請のお知らせ】</div>
+  <div>【勤怠変更申請のお知らせ】
+    <% attendances = Attendance.where(edit_one_month_request: "1", one_month_superior_confirmation: current_user) %>
+    <% if attendances.count > 0 %>
+      <% num = attendances.count %>
+      <%= link_to "通知が#{num}件あります。", edit_one_month_notice_user_attendances_path(current_user), class: "overtime-notice", remote: true %>
+    <% end %>
+  </div>
   <div>【残業申請のお知らせ】
     <% attendances = Attendance.where(overtime_request: "1", overtime_superior_confirmation: current_user) %>
     <% if attendances.count > 0 %>
       <% num = attendances.count %>
-      <%= link_to "通知が#{num}件あります。", edit_overtime_notice_user_attendances_path(@user), class: "overtime-notice", remote: true %>
+      <%= link_to "通知が#{num}件あります。", edit_overtime_notice_user_attendances_path(current_user), class: "overtime-notice", remote: true %>
     <% end %>
   </div>
 <% end %>
@@ -109,7 +115,9 @@
           <td><%= day.scheduled_end_time.min if day.scheduled_end_time.present? %></td>
           <td><%= overtime_status(day.scheduled_end_time, @user.designated_work_end_time, @user.designated_work_start_time, @user, day) if day.scheduled_end_time %></td>
           <td><%= day.work_details %></td>
-          <td><%= day.overtime_status %></td>
+          <td><%= day.overtime_status %><br>
+              <%= day.one_month_status %><br>
+          </td>
         </tr>
       <% end %>
     </tbody>
@@ -141,3 +149,4 @@
 
 <div id="edit-overtime-request" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>
 <div id="edit-overtime-notice" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>
+<div id="edit-one-month-notice" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>

@@ -1,0 +1,72 @@
+<div class="modal-dialog modal-lg modal-dialog-center">
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <h1 class="modal-title text-center">勤怠編集</h1>
+    </div>
+    <div class="modal-body">
+      <%= form_with(model: @user, url: update_one_month_notice_user_attendances_path(@user), local: true, method: :patch) do |f| %>
+      <% @attendances.each do |day| %>
+      <%= f.fields_for 'attendances[]', day do |at| %>
+      <% user = User.find(day.user_id) %>
+        <h1 class="text-center"><%= user.name %></h1>
+        <table class="table table-bordered table-condensed table-striped">
+          <thead>
+            <tr>
+              <th rowspan="3", class="text-center">日付</th>
+              <th rowspan="3", class="text-center">曜日</th>
+              <th colspan="4", class="text-center">変更前</th>
+              <th colspan="4", class="text-center">変更後</th>
+              <th rowspan="3", class="text-center">備考</th>
+              <th rowspan="3", class="text-center">指示者確認㊞</th>
+              <th rowspan="3", class="text-center">変更</th>
+              <th rowspan="3", class="text-center">勤怠を確認する</th>
+            </tr>
+            <tr>
+              <th colspan="2", class="text-center">出社</th>
+              <th colspan="2", class="text-center">退社</th>
+              <th colspan="2", class="text-center">出社</th>
+              <th colspan="2", class="text-center">退社</th>
+            </tr>
+            <tr>
+              <th class="text-center">時</th>
+              <th class="text-center">分</th>
+              <th class="text-center">時</th>
+              <th class="text-center">分</th>
+              <th class="text-center">時</th>
+              <th class="text-center">分</th>
+              <th class="text-center">時</th>
+              <th class="text-center">分</th>
+            </tr>
+          </thead>
+        
+          <tbody>
+            <tr>
+              <td class="text-center"><%= l(day.worked_on, format: :short) %></td>
+              <td class="text-center"><%= $days_of_the_week[day.worked_on.wday] %></td>
+              <td class="text-center"><%= day.started_at.hour if day.started_at.present? %></td>
+              <td class="text-center"><%= day.started_at.min if day.started_at.present? %></td>
+              <td class="text-center"><%= day.finished_at.hour if day.finished_at.present? %></td>
+              <td class="text-center"><%= day.finished_at.min if day.finished_at.present? %></td>
+              <td class="text-center"><%= day.started_at_temporary.hour %></td>
+              <td class="text-center"><%= day.started_at_temporary.min %></td>
+              <td class="text-center"><%= day.finished_at_temporary.hour %></td>
+              <td class="text-center"><%= day.finished_at_temporary.min %></td>
+              <td class="text-center"><%= day.note_temporary %></td>
+              <td class="text-center">
+                <%= at.select :one_month_check, ['なし', '申請中', '承認', '否認'], class: "form_control" %>
+              </td>
+              <td class="text-center"><%= at.check_box :one_month_change %></td>
+              <td class="text-center"><%= link_to "確認", show_check_user_path(day.user_id, date: day.worked_on.beginning_of_month), class: "btn btn-primary" %></td>
+            </tr>
+          </tbody>
+        </table>
+      <% end %>
+      <% end %>
+      <%= f.submit "変更を送信する", class: "btn btn-primary btn-block" %>
+      <% end %>
+    </div>
+  </div>
+</div>
