@@ -46,12 +46,12 @@
             <tr>
               <td class="text-center"><%= l(day.worked_on, format: :short) %></td>
               <td class="text-center"><%= $days_of_the_week[day.worked_on.wday] %></td>
-              <td class="text-center"><%= day.started_at.hour if day.started_at.present? %></td>
-              <td class="text-center"><%= day.started_at.min if day.started_at.present? %></td>
+              <td class="text-center"><%= format_hour_quarter_start(day.started_at) if day.started_at.present? %></td>
+              <td class="text-center"><%= format_minute_quarter_start(day.started_at) if day.started_at.present? %></td>
               <td class="text-center"><%= day.finished_at.hour if day.finished_at.present? %></td>
               <td class="text-center"><%= day.finished_at.min if day.finished_at.present? %></td>
-              <td class="text-center"><%= day.started_at_temporary.hour %></td>
-              <td class="text-center"><%= day.started_at_temporary.min %></td>
+              <td class="text-center"><%= format_hour_quarter_start(day.started_at_temporary) %></td>
+              <td class="text-center"><%= format_minute_quarter_start(day.started_at_temporary) %></td>
               <td class="text-center"><%= day.finished_at_temporary.hour %></td>
               <td class="text-center"><%= day.finished_at_temporary.min %></td>
               <td class="text-center"><%= day.note_temporary %></td>

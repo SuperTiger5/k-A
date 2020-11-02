@@ -94,20 +94,20 @@
           </td>
           <td><%= l(day.worked_on, format: :short) %></td>
           <td class = "<%= sunday_or_saturday_color(day) %>"><%= $days_of_the_week[day.worked_on.wday] %></td>
-          <td><%= day.started_at.hour if day.started_at.present? %></td>
-          <td><%= format_minute_quarter(day.started_at) if day.started_at.present? %></td>
+          <td><%= format_hour_quarter_start(day.started_at) if day.started_at.present? %></td>
+          <td><%= format_minute_quarter_start(day.started_at) if day.started_at.present? %></td>
           <td class = "text-center">
             <% if btn_text = attendance_state(day) %>
               <%= link_to "#{btn_text}", user_attendance_path(@user, day), method: :patch, class: "btn btn-default btn-block btn-secondary btn-attendance" %>
             <% end %>
           </td>
           <td><%= day.finished_at.hour if day.finished_at.present? %></td>
-          <td><%= format_minute_quarter(day.finished_at) if day.finished_at.present? %></td>
+          <td><%= format_minute_quarter_finish(day.finished_at) if day.finished_at.present? %></td>
           <td></td>
           <td>
             <% if day.started_at.present? && day.finished_at.present? %>
-              <%= str_times = working_times(day.started_at, day.finished_at) %>
-              <% @total_working_times = @total_working_times.to_f + str_times.to_f %>
+              <%= str_times = time_spent_at_work(day.started_at, day.finished_at) %>
+              <% @total_time_spent_at_work = @total_time_spent_at_work.to_f + str_times.to_f %>
             <% end %>
           </td>
           <td><%= day.note %></td>
@@ -135,10 +135,17 @@
         <td rowspan="2"></td>
       </tr>
       <tr>
-        <td colspan="2"><%= @attendances.count %></td>
+        <td colspan="2"><%= days_num = @attendances.count %></td>
         <td colspan="5"></td>
-        <td colspan="2"><%= @total_working_times %></td>
-        <td colspan="2"></td>
+        <td colspan="2">
+          <% x = Attendance.where.not(finished_at: nil) %>
+          <% y = 0 %>
+          <% x.each do |day| %>
+            <% y += 1 if day.worked_on >= Date.current.beginning_of_month %>
+          <% end %>
+          <%= @total_working_times = @total_time_spent_at_work - y * 1 %>
+        </td>
+        <td colspan="2"><%= @total_time_spent_at_work %></td>
         <td></td>
         <td></td>
         <td></td>

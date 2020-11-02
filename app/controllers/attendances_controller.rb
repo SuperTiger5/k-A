@@ -56,7 +56,29 @@ class AttendancesController < ApplicationController
   end
   
   def update_one_month_notice
-    
+    if one_month_notice_valid?
+      one_month_notice_params.each do |id, item|
+        attendance = Attendance.find(id)
+        if item[:one_month_check] == "承認"
+          attendance.update_attributes!(started_at: attendance.started_at_temporary,
+                                        started_at_temporary: nil,
+                                        finished_at: attendance.finished_at_temporary,
+                                        finished_at_temporary: nil,
+                                        note: attendance.note_temporary,
+                                        note_temporary: nil,
+                                        one_month_status: "#{current_user.name}が勤怠編集を承認しました。")
+        elsif item[:one_month_check] == "否認"
+          attendance.update_attributes!(started_at_temporary: nil,
+                                        finished_at_temporary: nil,
+                                        note_temporary: nil,
+                                        one_month_status: "#{current_user.name}が勤怠編集を否認しました。")
+        end
+      end
+      flash[:success] = "勤怠編集を更新しました。"
+    else
+      flash[:danger] = "指示者確認を承認または否認にしてください。または変更にチェックしてください。"
+      redirect_to current_user
+    end
   end
   
   def edit_overtime_request
@@ -151,7 +173,7 @@ class AttendancesController < ApplicationController
       params.require(:user).permit(attendances: [:started_at_temporary, :finished_at_temporary, :note_temporary, :one_month_superior_confirmation, :next_day_one_month])[:attendances]
     end
     
-    def one_monce_notice_params
+    def one_month_notice_params
       params.require(:user).permit(attendances: [:one_month_check, :one_month_change])[:attendances]
     end
     
