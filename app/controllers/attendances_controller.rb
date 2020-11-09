@@ -156,6 +156,7 @@ class AttendancesController < ApplicationController
   end
   
   def update_one_month_notice
+    ActiveRecord::Base.transaction do
     if one_month_notice_valid?
       one_month_notice_params.each do |id, item|
         attendance = Attendance.find(id)
@@ -184,10 +185,54 @@ class AttendancesController < ApplicationController
       flash[:danger] = "指示者確認を承認または否認にしてください。または変更にチェックしてください。"
       redirect_to current_user
     end
+    end
+  rescue ActiveRecord::RecordInvalid
+    flash[:danger] = "無効な入力データがあった為、更新をキャンセルしました。"
+    redirect_to current_user
   end
   
-  def edit_final_one_month_request
-    @superiors = User.where(superior: true).where.not(id: @user)
+  def update_final_one_month_request
+    final_one_month_request_params
+    @user = User.find(params[:user_id])
+    if final_one_month_request_invalid?
+      attendance = current_user.attendances.find_by(worked_on: $first_day)
+      attendance.update_attributes!(final_one_month_request_params)
+      attendance.update_attributes!(final_one_month_request: "1",
+                                    request_final_one_month: $first_day,
+                                    final_one_month_status: "#{User.find(attendance.final_one_month_superior_confirmation).name}に申請中")
+      flash[:success] = "1ヶ月の勤怠を申請しました。"
+    else
+      flash[:danger] = "上長を選択してください。"
+    end
+    redirect_to user_url(current_user, date: $first_day)
+  end
+  
+  def edit_final_one_month_notice
+    @user = User.find(params[:user_id])
+    @attendances = Attendance.where(final_one_month_request: "1").where.not(final_one_month_superior_confirmation: current_user)
+  end
+  
+  def update_final_one_month_notice
+    ActiveRecord::Base.transaction do
+    if final_one_month_notice_invalid?
+      final_one_month_notice_params.each do |id, item|
+        attendance = Attendance.find(id)
+        attendance.update_attributes!(item)
+        attendance.update_attributes!(final_one_month_approval: "1",
+                                      final_one_month_request: nil,
+                                      final_one_month_status: "#{User.find(attendance.final_one_month_superior_confirmation).name}から承認済み",
+                                      final_one_month_superior_confirmation: nil
+                                      )
+      end
+      flash[:success] = "申請を承認しました。"
+    else
+      flash[:danger] = "指示者確認㊞を承認または否認にしてください。または変更にチェックをいれてください。"
+    end
+    end 
+    redirect_to current_user
+  rescue ActiveRecord::RecordInvalid
+    flash[:danger] = "無効な入力データがあった為、更新をキャンセルしました。"
+    redirect_to current_user
   end
   
   private
@@ -222,6 +267,11 @@ class AttendancesController < ApplicationController
       end
     end
     
-    
+    def final_one_month_request_params
+      params.require(:attendance).permit(:final_one_month_superior_confirmation)
+    end
 
+    def final_one_month_notice_params
+      params.require(:user).permit(attendances: [:final_one_month_check, :final_one_month_change])[:attendances]
+    end
 end

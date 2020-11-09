@@ -28,6 +28,14 @@ class CreateAttendances < ActiveRecord::Migration[5.1]
       t.datetime :scheduled_end_time
       t.datetime :scheduled_end_time_temporary
       t.timestamps
+      
+      t.string :final_one_month_request
+      t.string :final_one_month_approval
+      t.string :final_one_month_superior_confirmation
+      t.string :final_one_month_check, default: "申請中"
+      t.string :final_one_month_change
+      t.string :final_one_month_status, default: "所属長承認　未"
+      t.datetime :request_final_one_month
     end
   end
 end

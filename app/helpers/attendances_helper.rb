@@ -133,5 +133,26 @@ module AttendancesHelper
     return a
   end
  
+  def final_one_month_request_invalid?
+    final_one_month_request_params
+    if params[:attendance][:final_one_month_superior_confirmation].present?
+      a = true
+    else
+      a = false
+    end
+    return a
+  end
   
+  def final_one_month_notice_invalid?
+    final_one_month_notice_params.each do |id, item|
+      a = true
+      if item[:final_one_month_check].in?(["承認", "否認"]) && item[:final_one_month_change] == "1"
+        next
+      else
+        a = false
+        break
+      end
+      return a
+    end
+  end
 end

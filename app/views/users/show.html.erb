@@ -29,7 +29,13 @@
 </div>
 
 <% if current_user.superior? && current_user?(@user) %>
-  <div>【所属長承認申請のお知らせ】</div>
+  <div>【所属長承認申請のお知らせ】
+    <% attendances = Attendance.where(final_one_month_request: "1", final_one_month_superior_confirmation: current_user) %>
+    <% if attendances.count > 0 %>
+      <% num = attendances.count %>
+      <%= link_to "通知が#{num}件あります。", edit_final_one_month_notice_user_attendances_path(current_user), class: "overtime-notice", remote: true %>
+    <% end %>
+  </div>
   <div>【勤怠変更申請のお知らせ】
     <% attendances = Attendance.where(one_month_request: "1", one_month_superior_confirmation: current_user) %>
     <% if attendances.count > 0 %>
@@ -90,7 +96,7 @@
           <td>
             <% if current_user?(@user) %>
               <%= link_to "残業申請", edit_overtime_request_user_attendance_path(@user, day), remote: true, class: "btn btn-primary" %>
-              <%= link_to "削除", d_user_attendance_path(current_user, day), method: :delete %>
+              <% if day.worked_on == Date.current %><%= link_to "削除", d_user_attendance_path(current_user, day), method: :delete %><% end %>
             <% end %>
           </td>
           <td><%= l(day.worked_on, format: :short) %></td>
@@ -98,7 +104,7 @@
           <td><%= day.started_at.hour if day.started_at.present? %></td>
           <td><%= day.started_at.min if day.started_at.present? %></td>
           <td class = "text-center">
-            <% if btn_text = attendance_state(day) %>
+            <% if btn_text = attendance_state(day) && current_user?(@user) %>
               <%= link_to "#{btn_text}", user_attendance_path(@user, day), method: :patch, class: "btn btn-default btn-block btn-secondary btn-attendance" %>
             <% end %>
           </td>
@@ -135,17 +141,15 @@
         <td></td>
         <td rowspan="2">
           <div>
-            上長承認
-            <% if @user.final_one_month_request == "1" %>
-              済み
-            <% else %>
-              未
-            <% end %>
+            <% @attendance = @user.attendances.find_by(worked_on: $first_day) %>
+            <%= @attendance.final_one_month_status %>
           </div>
           <div>
-            <%= form_with(model: @user, url: update_final_one_month_request_user_attendances_path(@user), local: true, method: :patch) do |f| %>
-              <%= f.collection_select :final_one_month_superior_confirmation, @superiors, :id, name, prompt: "選択してください", class: "form_control" %>
-              <%= f.submit "申請する", class: "btn btn-primary" %>
+            <% if current_user?(@user) %>
+              <%= form_with(model: @attendance, url: update_final_one_month_request_user_attendance_path(current_user, @attendance), local: true, method: :patch) do |f| %>
+                <%= f.collection_select :final_one_month_superior_confirmation, @superiors, :id, :name, prompt: "選択してください", class: "form_control" %><br>
+                <%= f.submit "申請する", class: "btn btn-primary btn-final-one-month" %>
+              <% end %>
             <% end %>
           </div>
         </td>
@@ -176,3 +180,4 @@
 <div id="edit-overtime-request" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>
 <div id="edit-overtime-notice" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>
 <div id="edit-one-month-notice" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>
+<div id="edit-final-one-month-notice" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>

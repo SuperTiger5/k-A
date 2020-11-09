@@ -27,6 +27,7 @@ class ApplicationController < ActionController::Base
     @first_day = 
     params[:date].nil? ?
     Date.current.beginning_of_month : params[:date].to_date
+    $first_day = @first_day
     @last_day = @first_day.end_of_month
     one_month = [*@first_day..@last_day]
     # ユーザーに紐付く一ヶ月分のレコードを検索し取得します。
