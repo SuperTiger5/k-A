@@ -9,7 +9,7 @@
     <div class="modal-body">
       <%= form_with(model: @user, url: update_one_month_notice_user_attendances_path(@user), local: true, method: :patch) do |f| %>
       <% @attendances.each do |day| %>
-      <%= f.fields_for 'attendances[]', day do |at| %>
+      <%= f.fields_for 'attendances[]', day do |attendance| %>
       <% user = User.find(day.user_id) %>
         <h1 class="text-center"><%= user.name %></h1>
         <table class="table table-bordered table-condensed table-striped">
@@ -46,20 +46,20 @@
             <tr>
               <td class="text-center"><%= l(day.worked_on, format: :short) %></td>
               <td class="text-center"><%= $days_of_the_week[day.worked_on.wday] %></td>
-              <td class="text-center"><%= format_hour_quarter_start(day.started_at) if day.started_at.present? %></td>
-              <td class="text-center"><%= format_minute_quarter_start(day.started_at) if day.started_at.present? %></td>
+              <td class="text-center"><%= day.started_at.hour if day.started_at.present? %></td>
+              <td class="text-center"><%= day.started_at.min if day.started_at.present? %></td>
               <td class="text-center"><%= day.finished_at.hour if day.finished_at.present? %></td>
               <td class="text-center"><%= day.finished_at.min if day.finished_at.present? %></td>
-              <td class="text-center"><%= format_hour_quarter_start(day.started_at_temporary) %></td>
-              <td class="text-center"><%= format_minute_quarter_start(day.started_at_temporary) %></td>
+              <td class="text-center"><%= day.started_at_temporary.hour %></td>
+              <td class="text-center"><%= day.started_at_temporary.min %></td>
               <td class="text-center"><%= day.finished_at_temporary.hour %></td>
               <td class="text-center"><%= day.finished_at_temporary.min %></td>
               <td class="text-center"><%= day.note_temporary %></td>
               <td class="text-center">
-                <%= at.select :one_month_check, ['なし', '申請中', '承認', '否認'], class: "form_control" %>
+                <%= attendance.select :one_month_check, ['なし', '申請中', '承認', '否認'], class: "form_control" %>
               </td>
-              <td class="text-center"><%= at.check_box :one_month_change %></td>
-              <td class="text-center"><%= link_to "確認", show_check_user_path(day.user_id, date: day.worked_on.beginning_of_month), class: "btn btn-primary" %></td>
+              <td class="text-center"><%= attendance.check_box :one_month_change %></td>
+              <td class="text-center"><%= link_to "確認", user_path(day.user_id, date: day.worked_on.beginning_of_month), class: "btn btn-primary" %></td>
             </tr>
           </tbody>
         </table>

@@ -20,20 +20,19 @@
 /* ユーザー勤怠情報テーブル */
 
 #attendances-edit {
-  th {
+ th {
     vertical-align: middle;
-    text-align: center;
-  } 
-
-  td{
+    text-align: center !important;
+  }
+  td {
     vertical-align: middle;
-    text-align: left;
+    text-align: center !important;
   }
 }
 
 #table-attendances {
   th {
-    vertical-align: middle;
+    vertical-align: middle !important;
     text-align: center;
   } 
 

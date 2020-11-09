@@ -2,6 +2,7 @@ class UsersController < ApplicationController
   before_action :set_user, only: [:show, :show_check, :destroy, :edit, :update, :edit_basic_info, :update_basic_info]
   before_action :logged_in_user, only: [:show, :show_check, :index, :destroy, :edit, :update]
   before_action :admin_user, only: [:index, :destroy, :edit_basic_info, :update_basic_info]
+  before_action :admin_or_correct_user, only: :show
   before_action :set_one_month, only: [:show, :show_check]
   
   def new
@@ -26,10 +27,7 @@ class UsersController < ApplicationController
   
   def show
     @worked_sum = @attendances.where.not(started_at: nil, finished_at: nil).count
-  end
-  
-  def show_check
-    @worked_sum = @attendances.where.not(started_at: nil, finished_at: nil).count
+    @superiors = User.where(superior: true).where.not(id: current_user)
   end
   
   def edit
@@ -95,6 +93,13 @@ class UsersController < ApplicationController
     
     def basic_info_params
       params.require(:user).permit(:basic_time, :basic_work_time)
+    end
+    
+    def admin_or_correct_user
+      unless current_user?(@user) || current_user.admin?
+        flash[:danger] = "管理者以外は他のユーザの勤怠ページへアクセスできません。"
+        redirect_to current_user
+      end
     end
 
 end

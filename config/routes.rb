@@ -14,7 +14,6 @@ Rails.application.routes.draw do
   resources :users do
     collection { post :import }
     member do
-      get 'show_check'
       get 'edit_basic_info'
       patch 'update_basic_info'
     end
@@ -22,6 +21,7 @@ Rails.application.routes.draw do
       member do
         get 'edit_overtime_request'
         patch 'update_overtime_request'
+        delete 'd'
       end
       collection do
         get 'edit_overtime_notice'
@@ -30,6 +30,7 @@ Rails.application.routes.draw do
         patch 'update_one_month_request'
         get 'edit_one_month_notice'
         patch 'update_one_month_notice'
+        patch 'update_final_one_month_request'
       end
     end
   end

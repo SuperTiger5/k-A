@@ -19,79 +19,7 @@ module AttendancesHelper
     return css_class
   end
   
-  def working_times(start, finish)
-    x = format_hour_quarter_start(start).to_f
-    s = x + format_minute_quarter_start(start).to_f / 60
-    f = finish.hour.to_f + format_minute_quarter_finish(finish).to_f / 60
-    format("%.2f", f - s - 1)
-  end
-  
-  def time_spent_at_work(start, finish)
-    x = format_hour_quarter_start(start).to_f
-    s = x + format_minute_quarter_start(start).to_f / 60
-    f = finish.hour.to_f + format_minute_quarter_finish(finish).to_f / 60
-    format("%.2f", f - s)
-  end
-  
-  def format_hour_quarter_start(time)
-    if format_minute_quarter_start(time) == "60"
-      format("%i", time.hour + 1)
-    else
-      format("%i", time.hour)
-    end
-  end
-  
-  def format_minute_quarter_start(time)
-    if time.min / 15 + 1 == 4
-      return "0"
-    else
-      format("%i", 15 * (time.min / 15 + 1))
-    end
-  end
-  
-  def format_minute_quarter_finish(time)
-    format("%i", 15 * (time.min / 15))
-  end
-  
-  def scheduled_end_time_invalid?(sc, dend, dstart, user, day)
-    if day.next_day == "0" 
-      overtime = format_basic_info(sc).to_f - format_basic_info(dend).to_f
-      if overtime > 0
-        return true
-      else
-        return false
-      end
-    else
-      if format_basic_info(sc).to_f < format_basic_info(dstart).to_f
-        overtime = 24 - format_basic_info(dend).to_f + format_basic_info(sc).to_f
-        return true
-      else
-        return false
-      end
-    end
-  end
-  
-  def overtime_status(sc, dend, dstart, user, day)
-    if day.next_day == "0"
-      overtime = format_basic_info(sc).to_f - format_basic_info(dend).to_f
-      if overtime > 0
-        return format("%.2f", overtime)
-      else
-        overtime = "終了予定時間が定時を越えてません。"
-        return overtime
-      end
-    else
-      if format_basic_info(sc).to_f < format_basic_info(dstart).to_f
-        overtime = 24 - format_basic_info(dend).to_f + format_basic_info(sc).to_f
-        return format("%.2f", overtime)
-      else
-        overtime = "残業時間が翌日の出勤時間を越してます。"
-        return overtime
-      end
-    end
-  end
-  
-  def overtime_attendances_invalid?
+  def overtime_approval_attendances_invalid?
     a = true
       overtime_notice_params.each do |id, item|
         if item[:overtime_change] == "1" && item[:overtime_check].in?(["承認", "否認"])
@@ -104,68 +32,98 @@ module AttendancesHelper
       return a
   end
   
-  #まとめ更新のときにはtime_selectよりtime_field
-  #if item[:note]と if item[:note].present?は別
-  def one_month_invalid?
+  # まとめ更新のときにはtime_selectよりtime_field
+  # if item[:note]と if item[:note].present?は別
+  def one_month_request_invalid?
     a = true
-    edit_one_month_params.each do |id, item|
+    b = 0
+    one_month_request_params.each do |id, item|
       if item[:next_day_one_month] == "0"
-        if item[:started_at_temporary].present? && item[:finished_at_temporary].present? && item[:note_temporary].present? && item[:one_month_superior_confirmation].present?
-            if item[:started_at_temporary] < item[:finished_at_temporary]
-              next
-            else
-              a = false
-            end
-        elsif item[:started_at_temporary].blank? && item[:finished_at_temporary].blank? && item[:note_temporary].blank? && item[:one_month_superior_confirmation].blank?
+        if item[:started_at_temporary].blank? && item[:finished_at_temporary].blank? && item[:note_temporary].blank? && item[:one_month_superior_confirmation].blank?
           next
-        else
+        elsif item[:started_at_temporary].present? && item[:finished_at_temporary].present? && item[:note_temporary].present? && item[:one_month_superior_confirmation].present?
+          if format_basic_info(item[:started_at_temporary].in_time_zone).to_f < format_basic_info(item[:finished_at_temporary].in_time_zone).to_f
+            b += 1
+            next
+          else
+            b += 1
+            a = false
+            break
+          end
+        else #空白
+          b += 1
           a = false
           break
         end
-      else
+      elsif item[:next_day_one_month] == "1"
         if item[:started_at_temporary].present? && item[:finished_at_temporary].present? && item[:note_temporary].present? && item[:one_month_superior_confirmation].present?
-          if item[:finished_at_temporary] < item[:started_at_temporary]
+          if format_basic_info(item[:started_at_temporary].in_time_zone).to_f > format_basic_info(item[:finished_at_temporary].in_time_zone).to_f
+            b += 1
             next
           else
+            b += 1
             a = false
             break
           end
         else
+          b += 1
           a = false
           break
         end
       end
     end
+    if b == 0
+      a = false
+    end
     return a
   end
   
-  def one_month_blank_column
-    edit_one_month_params.each do |id, item|
-      attendance = Attendance.find(id)
+   def one_month_request_flash
+    b = 0
+    one_month_request_params.each do |id, item|
       if item[:next_day_one_month] == "0"
         if item[:started_at_temporary].blank? && item[:finished_at_temporary].blank? && item[:note_temporary].blank? && item[:one_month_superior_confirmation].blank?
-            next
+          next
         elsif item[:started_at_temporary].present? && item[:finished_at_temporary].present? && item[:note_temporary].present? && item[:one_month_superior_confirmation].present?
-            attendance.update_attributes!(item)
-            attendance.update_attributes!(edit_one_month_request: "1",
-                                          one_month_status: "#{User.find(item[:one_month_superior_confirmation]).name}に勤怠編集申請中。"
-                                          )
+          if format_basic_info(item[:started_at_temporary].in_time_zone).to_f < format_basic_info(item[:finished_at_temporary].in_time_zone).to_f
+            b += 1
+            next
+          else
+            b += 1
+            flash[:danger] = "出社時刻が退社時刻より遅い申請があります。(出勤時間、退勤時間は15分刻みに自動変換されます。例えば出勤時間9:45→9:45、9:46→10:00、退勤時間18:45→18:45、18:46→18:45)"
+            break
+          end
+        else #空白
+          b += 1
+          flash[:danger] = "未入力の項目があります。"
+          break
         end
-      else
-            attendance.update_attributes!(item)
-            attendance.update_attributes!(edit_one_month_request: "1",
-                                          one_month_status: "#{User.find(item[:one_month_superior_confirmation]).name}に勤怠編集申請中。"
-                                          )
+      elsif item[:next_day_one_month] == "1"
+        if item[:started_at_temporary].present? && item[:finished_at_temporary].present? && item[:note_temporary].present? && item[:one_month_superior_confirmation].present?
+          if format_basic_info(item[:started_at_temporary].in_time_zone).to_f > format_basic_info(item[:finished_at_temporary].in_time_zone).to_f
+            b += 1
+            next
+          else
+            b += 1
+            flash[:danger] = "翌日にチェックありで、出社時刻が退社時刻より早い申請があります。(出勤時間、退勤時間は15分刻みに自動変換されます。例えば出勤時間9:45→9:45、9:46→10:00、退勤時間18:45→18:45、18:46→18:45)"
+            break
+          end
+        else
+          b += 1
+          flash[:danger] = "未入力の項目があります。"
+          break
+        end
       end
+    end
+    if b == 0
+      flash[:danger] = "全ての申請が未入力になってます。"
     end
   end
   
   def one_month_notice_valid?
     a = true
     one_month_notice_params.each do |id, item|
-      if item[:one_month_check] == "承認" && item[:one_month_change] == "1"
-        next
-      elsif item[:one_month_check] == "否認" && item[:one_month_change] == "1"
+      if item[:one_month_check].in?(["承認", "否認"]) && item[:one_month_change] == "1"
         next
       else
         a = false
@@ -174,5 +132,6 @@ module AttendancesHelper
     end
     return a
   end
+ 
   
 end
