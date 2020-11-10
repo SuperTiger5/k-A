@@ -39,6 +39,7 @@ ActiveRecord::Schema.define(version: 20200919155909) do
     t.string "one_month_status"
     t.datetime "scheduled_end_time"
     t.datetime "scheduled_end_time_temporary"
+    t.string "one_month_approval_changed"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "final_one_month_request"

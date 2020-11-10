@@ -29,20 +29,7 @@ User.create!(name: "サンプル1",
              password: "password",
              password_confirmation: "password")
              
-15.times do |n|
-  name = "name#{n+2}"
-  email = "sample#{n+2}@email.com"
-  password = "password"
-  employee_number = n + 5
-  uid = "#{n + 5}"
-  User.create!(name: name,
-             email: email,
-             uid: uid,
-             employee_number: employee_number,
-             password: password
-        )
-end
-             
+
 Place.create!(name: "東京",
               type_of_place: "出勤",
               number: 1)
@@ -51,3 +38,4 @@ Place.create!(name: "大阪",
               type_of_place: "退勤",
               number: 2)              
 p "Seed作成完了"
+

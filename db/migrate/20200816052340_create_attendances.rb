@@ -27,6 +27,7 @@ class CreateAttendances < ActiveRecord::Migration[5.1]
       t.string :one_month_status
       t.datetime :scheduled_end_time
       t.datetime :scheduled_end_time_temporary
+      t.string :one_month_approval_changed
       t.timestamps
       
       t.string :final_one_month_request

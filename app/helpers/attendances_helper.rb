@@ -57,7 +57,7 @@ module AttendancesHelper
         end
       elsif item[:next_day_one_month] == "1"
         if item[:started_at_temporary].present? && item[:finished_at_temporary].present? && item[:note_temporary].present? && item[:one_month_superior_confirmation].present?
-          if format_basic_info(item[:started_at_temporary].in_time_zone).to_f > format_basic_info(item[:finished_at_temporary].in_time_zone).to_f
+          if format_basic_info(item[:started_at_temporary].in_time_zone).to_f > format_basic_info(item[:finished_at_temporary].in_time_zone).to_f && format_basic_info(item[:finished_at_temporary].in_time_zone).to_f < format_basic_info(current_user.designated_work_start_time).to_f
             b += 1
             next
           else
@@ -100,12 +100,12 @@ module AttendancesHelper
         end
       elsif item[:next_day_one_month] == "1"
         if item[:started_at_temporary].present? && item[:finished_at_temporary].present? && item[:note_temporary].present? && item[:one_month_superior_confirmation].present?
-          if format_basic_info(item[:started_at_temporary].in_time_zone).to_f > format_basic_info(item[:finished_at_temporary].in_time_zone).to_f
+          if format_basic_info(item[:started_at_temporary].in_time_zone).to_f > format_basic_info(item[:finished_at_temporary].in_time_zone).to_f && format_basic_info(item[:finished_at_temporary].in_time_zone).to_f < format_basic_info(current_user.designated_work_start_time).to_f
             b += 1
             next
           else
             b += 1
-            flash[:danger] = "翌日にチェックありで、出社時刻が退社時刻より早い申請があります。(出勤時間、退勤時間は15分刻みに自動変換されます。例えば出勤時間9:45→9:45、9:46→10:00、退勤時間18:45→18:45、18:46→18:45)"
+            flash[:danger] = "翌日にチェックありの場合、出社時刻を退社時刻より遅くしてください。または、退社時刻を翌日の指定勤務開始時間より早くしてください。(出勤時間、退勤時間は15分刻みに自動変換されます。例えば出勤時間9:45→9:45、9:46→10:00、退勤時間18:45→18:45、18:46→18:45)"
             break
           end
         else

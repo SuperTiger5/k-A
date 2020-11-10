@@ -25,10 +25,14 @@ class AttendancesController < ApplicationController
         flash[:danger] = UPDATE_ERROR_MSG
       end
     elsif @attendance.finished_at.nil?
-      if @attendance.update_attributes(finished_at: finish_time_by_quarter(Time.current))
-        flash[:info] = "おつかれさまでした。"
+      if finish_time_by_quarter(Time.current) > @attendance.started_at
+        if @attendance.update_attributes(finished_at: finish_time_by_quarter(Time.current))
+          flash[:info] = "おつかれさまでした。"
+        else
+          flash[:danger] = UPDATE_ERROR_MSG
+        end
       else
-        flash[:danger] = UPDATE_ERROR_MSG
+        flash[:danger] = "退勤時間が出勤時間より早いです。(出勤時間、退勤時間は15分毎に自動変換。例えば出勤時間9:45→10:00に繰り上げ、退勤時間18:12→18:00に繰り下げ)"
       end
     end
     redirect_to @user
@@ -62,7 +66,7 @@ class AttendancesController < ApplicationController
                                       )
           flash[:success] = "残業申請しました。"
         else
-          flash[:danger] = "翌日にチェックをした状態で、終了予定時間が翌日の指定勤務開始時間以降になってます。(終了予定時間は15分刻みです。例えば18:33→18:30に自動変換)"
+          flash[:danger] = "終了予定時間が翌日の指定勤務開始時間以降になってます。(終了予定時間は15分刻みです。例えば18:33→18:30に自動変換)"
         end
       end
     else 
@@ -169,6 +173,7 @@ class AttendancesController < ApplicationController
                                         note_temporary: nil,
                                         one_month_request: nil,
                                         one_month_superior_confirmation: nil,
+                                        one_month_approval_changed: "1",
                                         one_month_status: "#{current_user.name}が勤怠編集を承認しました。")
         elsif item[:one_month_check] == "否認"
           attendance.update_attributes!(started_at_temporary: nil,
@@ -209,7 +214,12 @@ class AttendancesController < ApplicationController
   
   def edit_final_one_month_notice
     @user = User.find(params[:user_id])
-    @attendances = Attendance.where(final_one_month_request: "1").where.not(final_one_month_superior_confirmation: current_user)
+    @attendances = Attendance.where(final_one_month_request: "1", final_one_month_superior_confirmation: current_user)
+    x = []
+    @attendances.each do |day|
+      x.push(day.user_id)
+    end
+    @users_id = x.uniq
   end
   
   def update_final_one_month_notice
@@ -217,22 +227,34 @@ class AttendancesController < ApplicationController
     if final_one_month_notice_invalid?
       final_one_month_notice_params.each do |id, item|
         attendance = Attendance.find(id)
-        attendance.update_attributes!(item)
-        attendance.update_attributes!(final_one_month_approval: "1",
-                                      final_one_month_request: nil,
-                                      final_one_month_status: "#{User.find(attendance.final_one_month_superior_confirmation).name}から承認済み",
-                                      final_one_month_superior_confirmation: nil
-                                      )
+        if item[:final_one_month_check] == "承認"
+          attendance.update_attributes!(item)
+          attendance.update_attributes!(final_one_month_approval: "1",
+                                        final_one_month_request: nil,
+                                        final_one_month_status: "#{User.find(attendance.final_one_month_superior_confirmation).name}から承認済み",
+                                        final_one_month_superior_confirmation: nil
+                                        )
+        else
+          attendance.update_attributes!(item)
+          attendance.update_attributes!(final_one_month_request: nil,
+                                        final_one_month_status: "#{User.find(attendance.final_one_month_superior_confirmation).name}から否認された。",
+                                        final_one_month_superior_confirmation: nil
+                                        )
+        end
       end
       flash[:success] = "申請を承認しました。"
     else
-      flash[:danger] = "指示者確認㊞を承認または否認にしてください。または変更にチェックをいれてください。"
+      flash[:danger] = "指示者確認㊞を承認または否認になってません。または変更にチェックが入ってません。"
     end
     end 
     redirect_to current_user
   rescue ActiveRecord::RecordInvalid
     flash[:danger] = "無効な入力データがあった為、更新をキャンセルしました。"
     redirect_to current_user
+  end
+  
+  def log
+    @user = User.find(params[:user_id])
   end
   
   private

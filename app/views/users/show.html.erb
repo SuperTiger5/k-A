@@ -52,11 +52,13 @@
   </div>
 <% end %>
 
+<% if current_user?(@user) %>
 <div class = "edit-user">
   <%= link_to "勤怠を編集", edit_one_month_request_user_attendances_path(@user, date: @first_day), class: "btn btn-primary btn-x" %>
   <%= link_to "CSVを出力", "#", class: "btn btn-primary btn-x" %><br>
-  <%= link_to "勤怠修正ログ（承認済み）", "#", class: "btn btn-primary btn-x" %>
+  <%= link_to "勤怠修正ログ（承認済み）", log_user_attendances_path(current_user), class: "btn btn-primary btn-x" %>
 </div>
+<% end %>
 
 <div>
   <table class = "table table-bordered table-condenced table-hover" id = "table-attendances">
@@ -96,7 +98,6 @@
           <td>
             <% if current_user?(@user) %>
               <%= link_to "残業申請", edit_overtime_request_user_attendance_path(@user, day), remote: true, class: "btn btn-primary" %>
-              <% if day.worked_on == Date.current %><%= link_to "削除", d_user_attendance_path(current_user, day), method: :delete %><% end %>
             <% end %>
           </td>
           <td><%= l(day.worked_on, format: :short) %></td>
@@ -104,8 +105,10 @@
           <td><%= day.started_at.hour if day.started_at.present? %></td>
           <td><%= day.started_at.min if day.started_at.present? %></td>
           <td class = "text-center">
-            <% if btn_text = attendance_state(day) && current_user?(@user) %>
-              <%= link_to "#{btn_text}", user_attendance_path(@user, day), method: :patch, class: "btn btn-default btn-block btn-secondary btn-attendance" %>
+            <% if current_user?(@user) %>
+            <% if btn_text = attendance_state(day) %>
+              <%= link_to "#{btn_text}", user_attendance_path(@user, day), method: :patch, class: "btn btn-default btn-block btn-primary btn-attendance" %>
+            <% end %>
             <% end %>
           </td>
           <td><%= day.finished_at.hour if day.finished_at.present? %></td>
@@ -145,11 +148,13 @@
             <%= @attendance.final_one_month_status %>
           </div>
           <div>
+            <% unless @attendance.final_one_month_approval == "1" %>
             <% if current_user?(@user) %>
               <%= form_with(model: @attendance, url: update_final_one_month_request_user_attendance_path(current_user, @attendance), local: true, method: :patch) do |f| %>
                 <%= f.collection_select :final_one_month_superior_confirmation, @superiors, :id, :name, prompt: "選択してください", class: "form_control" %><br>
                 <%= f.submit "申請する", class: "btn btn-primary btn-final-one-month" %>
               <% end %>
+            <% end %>
             <% end %>
           </div>
         </td>

@@ -21,7 +21,6 @@ Rails.application.routes.draw do
       member do
         get 'edit_overtime_request'
         patch 'update_overtime_request'
-        delete 'd'
         patch 'update_final_one_month_request'
       end
       collection do
@@ -33,6 +32,7 @@ Rails.application.routes.draw do
         patch 'update_one_month_notice'
         get 'edit_final_one_month_notice'
         patch 'update_final_one_month_notice'
+        get 'log'
       end
     end
   end
