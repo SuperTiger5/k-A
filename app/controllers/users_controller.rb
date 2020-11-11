@@ -1,3 +1,5 @@
+require 'csv'
+
 class UsersController < ApplicationController
   before_action :set_user, only: [:show, :show_check, :destroy, :edit, :update, :edit_basic_info, :update_basic_info]
   before_action :logged_in_user, only: [:show, :show_check, :index, :destroy, :edit, :update]
@@ -27,6 +29,35 @@ class UsersController < ApplicationController
   def show
     @worked_sum = @attendances.where.not(started_at: nil, finished_at: nil).count
     @superiors = User.where(superior: true).where.not(id: current_user)
+    respond_to do |format|
+      format.html
+      format.csv do |csv|
+        send_posts_csv($a)
+      end
+    end
+  end
+  
+  def send_posts_csv(attendances)
+    bom = "\uFEFF"
+    csv_data = CSV.generate(bom) do |csv|
+      header = %w(日付 曜日 出社時間 退社時間 在社時間)
+      csv << header
+
+      attendances.each do |day|
+        x = l(day.started_at, format: :time) if day.started_at.present?
+        y = l(day.finished_at, format: :time) if day.finished_at.present?
+        z = difference(day.finished_at, day.started_at) if day.finished_at.present? && day.finished_at.present?
+        values = [l(day.worked_on, format: :short),
+                  $days_of_the_week[day.worked_on.wday],
+                  x,
+                  y,
+                  z
+                  ]
+        csv << values
+      end
+
+    end
+    send_data(csv_data, filename: "1か月の勤怠.csv")
   end
   
   def edit

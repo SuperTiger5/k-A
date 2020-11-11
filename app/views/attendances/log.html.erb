@@ -1,7 +1,8 @@
 <% provide(:title, @user.name) %>
+
 <h1 class="text-center">勤怠ログ</h1>
 
-<table class="table table-condensed table-striped table-hover">
+<table class="table table-condensed table-striped table-hover table-bordered", id="table-attendances">
   <thead>
     <tr>
       <th>日付</th>
@@ -13,4 +14,17 @@
       <th>承認日</th>
     </tr>
   </thead>
+  <tbody>
+    <% @attendances.each do |day| %>
+    <tr>
+      <td><%= l(day.worked_on, format: :custom) %><font color=<%= saturday_or_sunday_color(day) %>>（<%= $days_of_the_week[day.worked_on.wday] %>）</font></td>
+      <td><%= l(day.before_started_at, format: :time) if day.before_started_at %></td>
+      <td><%= l(day.before_finished_at, format: :time) if day.before_finished_at%></td>
+      <td><%= l(day.started_at, format: :time) %></td>
+      <td><%= l(day.finished_at, format: :time) %></td>
+      <td><%= User.find(day.one_month_superior_confirmation).name %></td>
+      <td><%= l(day.one_month_approval_day, format: :custom) %><font color=<%= approval_saturday_or_sunday_color(day) %>>（<%= $days_of_the_week[day.one_month_approval_day.wday] %>）</font></td>
+    </tr>
+    <% end %>
+  </tbody>
 </table>

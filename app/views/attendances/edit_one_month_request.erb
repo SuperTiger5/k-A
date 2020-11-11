@@ -33,7 +33,7 @@
               <% end %>
             </td>
             <td><%= attendance.text_field :note_temporary, placeholder: "入力必須", include_blank: true, class: "form-control" %></td>
-            <td><%= attendance.collection_select :one_month_superior_confirmation, @superiors, :id, :name, prompt: "選択してください", class: "form-control" %></td>
+            <td><%= attendance.collection_select :one_month_superior_confirmation, @superiors, :id, :name, include_blank: "選択してください", class: "form-control" %></td>
           </tr>
           <% end %>
         <% end %>

@@ -62,5 +62,25 @@ module UsersHelper
              end
     format("%.2f", result) 
   end
-    
+  
+  def saturday_or_sunday_color(attendance)
+    if attendance.worked_on.wday == 0
+      return "red"
+    elsif attendance.worked_on.wday == 6
+      return "blue"
+    else
+      return "black"
+    end
+  end
+  
+  def approval_saturday_or_sunday_color(attendance)
+    if attendance.one_month_approval_day.wday == 0
+      return "red"
+    elsif attendance.one_month_approval_day.wday == 6
+      return "blue"
+    else
+      return "black"
+    end
+  end
+  
 end

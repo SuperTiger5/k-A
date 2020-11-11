@@ -1,4 +1,6 @@
+<% $a = current_user.attendances.where(worked_on: @first_day..@last_day) %>
 <% provide(:title, @user.name) %>
+
 <div>
   <table class = "table table-bordered table-condensed user-table">
     <tr>
@@ -55,7 +57,7 @@
 <% if current_user?(@user) %>
 <div class = "edit-user">
   <%= link_to "勤怠を編集", edit_one_month_request_user_attendances_path(@user, date: @first_day), class: "btn btn-primary btn-x" %>
-  <%= link_to "CSVを出力", "#", class: "btn btn-primary btn-x" %><br>
+  <%= link_to "CSVを出力", user_path(format: :csv), class: "btn btn-primary btn-x" %>
   <%= link_to "勤怠修正ログ（承認済み）", log_user_attendances_path(current_user), class: "btn btn-primary btn-x" %>
 </div>
 <% end %>
@@ -161,18 +163,11 @@
       </tr>
       <tr>
         <td colspan="2">
-          <% if params[:date].present? %>
-            <% first_day = params[:date].to_date.beginning_of_month %>
-            <% days = @attendances.where(worked_on: first_day..first_day.end_of_month) %>
-            <%= days_num = days.count %>
-          <% else %>
-            <% first_day = Date.current.beginning_of_month %>
-            <% days = @attendances.where(worked_on: first_day..first_day.end_of_month) %>
-            <%= days_num = days.count %>
-          <% end %>
+          <% days = @attendances.where(worked_on: @first_day..@last_day) %>
+          <%= days_num = days.count %>
         </td>
         <td colspan="5"></td>
-        <td colspan="2"></td>
+        <td colspan="2"><%= @worked_sum * format_basic_info(@user.basic_work_time).to_f %></td>
         <td colspan="2"><%= @total_stay_times_one_month %></td>
         <td></td>
         <td></td>

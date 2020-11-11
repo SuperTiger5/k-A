@@ -29,17 +29,16 @@ class ApplicationController < ActionController::Base
     Date.current.beginning_of_month : params[:date].to_date
     $first_day = @first_day
     @last_day = @first_day.end_of_month
+    $last_day = @last_day
     one_month = [*@first_day..@last_day]
     # ユーザーに紐付く一ヶ月分のレコードを検索し取得します。
     @attendances = @user.attendances.where(worked_on: @first_day..@last_day).order(:worked_on)
-    
     unless one_month.count == @attendances.count
       ActiveRecord::Base.transaction do
         one_month.each { |day| @user.attendances.create!(worked_on: day) }
       end
       @attendances = @user.attendances.where(worked_on: @first_day..@last_day).order(:worked_on)
     end
-    
   rescue ActiveRecord::RecordInvalid
     flash[:danger] = "ページ情報の取得に失敗しました、再アクセスしてください。<br>"
     redirect_to root_url

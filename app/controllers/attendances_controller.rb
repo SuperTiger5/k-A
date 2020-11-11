@@ -88,6 +88,7 @@ class AttendancesController < ApplicationController
             attendance.update_attributes!(item)
             attendance.update_attributes!(scheduled_end_time: attendance.scheduled_end_time_temporary,
                                           work_details: attendance.work_details_temporary,
+                                          next_day: nil,
                                           work_details_temporary: nil,
                                           scheduled_end_time_temporary: nil,
                                           overtime_request: nil,
@@ -99,6 +100,7 @@ class AttendancesController < ApplicationController
             if attendance.scheduled_end_time.present?
               attendance.update_attributes!(scheduled_end_time_temporary: nil,
                                             work_details_temporary: nil,
+                                            next_day: nil,
                                             overtime_request: nil,
                                             overtime_result_temporary: nil,
                                             overtime_status: "#{current_user.name}に残業を否認された。(前回分は承認済み。)")
@@ -165,22 +167,29 @@ class AttendancesController < ApplicationController
       one_month_notice_params.each do |id, item|
         attendance = Attendance.find(id)
         if item[:one_month_check] == "承認"
-          attendance.update_attributes!(started_at: attendance.started_at_temporary,
+          s = attendance.started_at.present? ? attendance.started_at : nil
+          f = attendance.finished_at.present? ? attendance.finished_at : nil
+          attendance.update_attributes!(before_started_at: s,
+                                        before_finished_at: f,
+                                        started_at: attendance.started_at_temporary,
                                         started_at_temporary: nil,
                                         finished_at: attendance.finished_at_temporary,
                                         finished_at_temporary: nil,
                                         note: attendance.note_temporary,
                                         note_temporary: nil,
                                         one_month_request: nil,
-                                        one_month_superior_confirmation: nil,
+                                        next_day_one_month: nil,
+                                        # one_month_superior_confirmation: nil,
                                         one_month_approval_changed: "1",
+                                        one_month_approval_day: Date.current,
                                         one_month_status: "#{current_user.name}が勤怠編集を承認しました。")
         elsif item[:one_month_check] == "否認"
           attendance.update_attributes!(started_at_temporary: nil,
                                         finished_at_temporary: nil,
                                         note_temporary: nil,
                                         one_month_request: nil,
-                                        one_month_superior_confirmation: nil,
+                                        next_day_one_month: nil,
+                                        # one_month_superior_confirmation: nil,
                                         one_month_status: "#{current_user.name}が勤怠編集を否認しました。")
         end
       end
@@ -252,12 +261,17 @@ class AttendancesController < ApplicationController
     flash[:danger] = "無効な入力データがあった為、更新をキャンセルしました。"
     redirect_to current_user
   end
-  
+
   def log
     @user = User.find(params[:user_id])
+    @attendances = Attendance.where(one_month_approval_changed: "1", worked_on: $first_day..$last_day)
   end
   
   private
+  
+    def log_params
+      params.require(:user).permit(attendances: [:worked_on])[:attendances]
+    end
   
     def set_user_in_attendance
       @user = User.find(params[:user_id])
