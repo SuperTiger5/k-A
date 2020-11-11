@@ -55,7 +55,7 @@ class AttendancesController < ApplicationController
                                       )
           flash[:success] = "残業申請しました。"
         else
-          flash[:danger] = "終了予定時間が指定勤務終了時間を越えてません。(終了予定時間は15分刻みです。例えば18:33→18:30に自動変換)"
+          flash[:danger] = "終了予定時間が指定勤務終了時間を越えてません。また、終了予定時間が0時以降の場合、翌日にチェックしてください。(終了予定時間は15分刻みです。例えば18:33→18:30に自動変換)"
         end
       else
         if format_basic_info(finish_time_by_quarter(params[:attendance][:scheduled_end_time_temporary].in_time_zone)).to_f < format_basic_info(current_user.designated_work_start_time).to_f 
