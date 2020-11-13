@@ -1,4 +1,5 @@
 class PlacesController < ApplicationController
+  before_action :admin_user
   before_action :set_place, only: [:destroy, :edit, :update]
   
   def new

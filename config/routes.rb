@@ -15,10 +15,10 @@ Rails.application.routes.draw do
     collection { post :import }
     member do
       get 'edit_basic_info'
-      patch 'update_basic_info'
     end
     resources :attendances, only: :update do
       member do
+        delete "d"
         get 'edit_overtime_request'
         patch 'update_overtime_request'
         patch 'update_final_one_month_request'

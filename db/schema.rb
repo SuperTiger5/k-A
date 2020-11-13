@@ -43,6 +43,9 @@ ActiveRecord::Schema.define(version: 20200919155909) do
     t.datetime "before_started_at"
     t.datetime "before_finished_at"
     t.date "one_month_approval_day"
+    t.string "next_overtime_or_one_month"
+    t.string "overtime_superior_id"
+    t.string "one_month_superior_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "final_one_month_request"

@@ -38,11 +38,9 @@ module AttendancesHelper
     a = true
     b = 0
     one_month_request_params.each do |id, item|
-      if item[:next_day_one_month] == "0"
-        if item[:started_at_temporary].blank? && item[:finished_at_temporary].blank? && item[:note_temporary].blank? && item[:one_month_superior_confirmation].blank?
-          next
-        elsif item[:started_at_temporary].present? && item[:finished_at_temporary].present? && item[:note_temporary].present? && item[:one_month_superior_confirmation].present?
-          unless item[:started_at_temporary].in_time_zone.hour == 23 && item[:started_at_temporary].in_time_zone.min > 45
+      if item[:one_month_superior_confirmation].present?
+        if item[:next_day_one_month] == "0"
+          if item[:started_at_temporary].present? && item[:finished_at_temporary].present? && item[:note_temporary].present?
             if format_basic_info(start_time_by_quarter(item[:started_at_temporary].in_time_zone)).to_f < format_basic_info(finish_time_by_quarter(item[:finished_at_temporary].in_time_zone)).to_f
               b += 1
               next
@@ -56,15 +54,9 @@ module AttendancesHelper
             a = false
             break
           end
-        else #空白
-          b += 1
-          a = false
-          break
-        end
-      elsif item[:next_day_one_month] == "1"
-        if item[:started_at_temporary].present? && item[:finished_at_temporary].present? && item[:note_temporary].present? && item[:one_month_superior_confirmation].present?
-          unless item[:started_at_temporary].in_time_zone.hour == 23 && item[:started_at_temporary].in_time_zone.min > 45
-            if format_basic_info(start_time_by_quarter(item[:started_at_temporary].in_time_zone)).to_f > format_basic_info(finish_time_by_quarter(item[:finished_at_temporary].in_time_zone)).to_f && format_basic_info(finish_time_by_quarter(item[:finished_at_temporary].in_time_zone)).to_f < format_basic_info(current_user.designated_work_start_time).to_f
+        elsif item[:next_day_one_month] == "1"
+          if item[:started_at_temporary].present? && item[:finished_at_temporary].present? && item[:note_temporary].present?
+            if format_basic_info(finish_time_by_quarter(item[:finished_at_temporary].in_time_zone)).to_f < format_basic_info(current_user.designated_work_start_time).to_f
               b += 1
               next
             else
@@ -77,11 +69,9 @@ module AttendancesHelper
             a = false
             break
           end
-        else
-          b += 1
-          a = false
-          break
         end
+      else
+        next
       end
     end
     if b == 0
@@ -93,50 +83,40 @@ module AttendancesHelper
    def one_month_request_flash
     b = 0
     one_month_request_params.each do |id, item|
-      if item[:next_day_one_month] == "0"
-        if item[:started_at_temporary].blank? && item[:finished_at_temporary].blank? && item[:note_temporary].blank? && item[:one_month_superior_confirmation].blank?
-          next
-        elsif item[:started_at_temporary].present? && item[:finished_at_temporary].present? && item[:note_temporary].present? && item[:one_month_superior_confirmation].present?
-          unless item[:started_at_temporary].in_time_zone.hour == 23 && item[:started_at_temporary].in_time_zone.min > 45
-            if format_basic_info(item[:started_at_temporary].in_time_zone).to_f < format_basic_info(item[:finished_at_temporary].in_time_zone).to_f
+      if item[:one_month_superior_confirmation].present?
+        if item[:next_day_one_month] == "0"
+          if item[:started_at_temporary].present? && item[:finished_at_temporary].present? && item[:note_temporary].present?
+            if format_basic_info(start_time_by_quarter(item[:started_at_temporary].in_time_zone)).to_f < format_basic_info(finish_time_by_quarter(item[:finished_at_temporary].in_time_zone)).to_f
               b += 1
               next
             else
               b += 1
-              flash[:danger] = "出社時刻が退社時刻より遅い申請があります。(出勤時間、退勤時間は15分刻みに自動変換されます。例えば出勤時間9:45→9:45、9:46→10:00、退勤時間18:45→18:45、18:46→18:45)"
+              flash[:danger] = "出社時刻を退社時刻より早くする必要あり。"
               break
             end
           else
             b += 1
-            flash[:danger] = "出社時刻が翌日の０時を越えています。(出勤時間は15分刻みに自動変換されます。例えば出勤時間23:46→0:00)"
+            flash[:danger] = "未入力の項目があります。"
             break
           end
-        else #空白
-          b += 1
-          flash[:danger] = "未入力の項目があります。"
-          break
-        end
-      elsif item[:next_day_one_month] == "1"
-        if item[:started_at_temporary].present? && item[:finished_at_temporary].present? && item[:note_temporary].present? && item[:one_month_superior_confirmation].present?
-          unless item[:started_at_temporary].in_time_zone.hour == 23 && item[:started_at_temporary].in_time_zone.min > 45
-            if format_basic_info(item[:started_at_temporary].in_time_zone).to_f > format_basic_info(item[:finished_at_temporary].in_time_zone).to_f && format_basic_info(item[:finished_at_temporary].in_time_zone).to_f < format_basic_info(current_user.designated_work_start_time).to_f
+        elsif item[:next_day_one_month] == "1"
+          if item[:started_at_temporary].present? && item[:finished_at_temporary].present? && item[:note_temporary].present?
+            if format_basic_info(finish_time_by_quarter(item[:finished_at_temporary].in_time_zone)).to_f < format_basic_info(current_user.designated_work_start_time).to_f
               b += 1
               next
             else
               b += 1
-              flash[:danger] = "翌日にチェックありの場合、出社時刻を退社時刻より遅くしてください。または、退社時刻を翌日の指定勤務開始時間より早くしてください。(出勤時間、退勤時間は15分刻みに自動変換されます。例えば出勤時間9:45→9:45、9:46→10:00、退勤時間18:45→18:45、18:46→18:45)"
+              flash[:danger] = "翌日にチェックがある場合、退社時刻を翌日の指定勤務開始時間より早くする必要あり。"
               break
             end
           else
             b += 1
-            flash[:danger] = "出社時刻が翌日の０時を越えています。(出勤時間は15分刻みに自動変換されます。例えば出勤時間23:46→0:00)"
+            flash[:danger] = "未入力の項目があります。"
             break
           end
-        else
-          b += 1
-          flash[:danger] = "未入力の項目があります。"
-          break
         end
+      else
+        next
       end
     end
     if b == 0

@@ -27,11 +27,7 @@
             <td><%= attendance.time_field :started_at_temporary, include_blank: true, class: "form-control" %></td>
             <td><%= attendance.time_field :finished_at_temporary, include_blank: true, class: "form-control" %></td>
             <td><%= attendance.check_box :next_day_one_month %></td>
-            <td>
-              <% if day.started_at.present? && day.finished_at.present? %>
-                <%= difference(day.finished_at, day.started_at) %>
-              <% end %>
-            </td>
+            <td><%= difference(day) if day.started_at.present? && day.finished_at.present? %></td>
             <td><%= attendance.text_field :note_temporary, placeholder: "入力必須", include_blank: true, class: "form-control" %></td>
             <td><%= attendance.collection_select :one_month_superior_confirmation, @superiors, :id, :name, include_blank: "選択してください", class: "form-control" %></td>
           </tr>

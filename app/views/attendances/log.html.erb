@@ -1,5 +1,11 @@
 <% provide(:title, @user.name) %>
-
+<div>
+  <%= form_with(url: log_user_attendances_path(@user), local: true, method: :get) do |f| %>
+    <div class="col-md-2"><%= f.date_select :select_year, {:discard_month => true, prompt: {year: "年", month: "月"}}, class: "form-control log-search" %></div>
+    <div class="col-md-2"><%= f.date_select :select_month, {:discard_day => true, :discard_year => true, :use_month_numbers => true, prompt: {year: "年", month: "月"}}, class: "form-control log-search" %></div>
+    <%= submit_tag '検索', class: "log-search" %>
+ <% end %>
+</div>
 <h1 class="text-center">勤怠ログ</h1>
 
 <table class="table table-condensed table-striped table-hover table-bordered", id="table-attendances">

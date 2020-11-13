@@ -16,17 +16,7 @@ class Attendance < ApplicationRecord
   #     errors.add(:started_at, "より早い退社時刻は無効です") if started_at > finished_at
   #   end
   # end
-  def self.csv_attributes
-    ["name", "content", "created_at", "updated_at"]
-  end
-
-  def self.generate_csv
-    CSV.generate(headers: true) do |csv|
-      csv << csv_attributes
-      all.each do |cont|
-        csv << csv_attributes.map{|attr| cont.send(attr)}
-      end
-    end
-  end
+ 
+  
 
 end

@@ -7,7 +7,8 @@ class AttendancesController < ApplicationController
                                                 :edit_one_month_notice, :update_one_month_notice]
   before_action :set_one_attendance, only: [:edit_overtime_request, :update_overtime_request]
   before_action :logged_in_user
-  before_action :only_superior, only: [:edit_overtime_notice, :update_overtime_notice, :update_one_month_notice]
+  before_action :correct_user, only: :edit_one_month_request
+  before_action :except_admin, only: :edit_one_month_request
   before_action :set_one_month, only: :edit_one_month_request
   
   UPDATE_ERROR_MSG = "勤怠登録に失敗しました。やり直してください。"
@@ -18,21 +19,31 @@ class AttendancesController < ApplicationController
   end
   def update
     @attendance = Attendance.find(params[:id])
+    s = Time.current
+    f = "2:00".in_time_zone
     if @attendance.started_at.nil?
-      if @attendance.update_attributes(started_at: start_time_by_quarter(Time.current))
+      if @attendance.update_attributes(started_at: start_time_by_quarter(s))
         flash[:info] = "おはようございます。"
       else
         flash[:danger] = UPDATE_ERROR_MSG
       end
     elsif @attendance.finished_at.nil?
-      if finish_time_by_quarter(Time.current) > @attendance.started_at
-        if @attendance.update_attributes(finished_at: finish_time_by_quarter(Time.current))
+      if @attendance.next_day == "1" && @attendance.scheduled_end_time.present? && format_basic_info(f).to_f < format_basic_info(current_user.designated_work_start_time).to_f
+        if @attendance.update_attributes(finished_at: finish_time_by_quarter(f))
           flash[:info] = "おつかれさまでした。"
         else
           flash[:danger] = UPDATE_ERROR_MSG
         end
       else
-        flash[:danger] = "退勤時間が出勤時間より早いです。(出勤時間、退勤時間は15分毎に自動変換。例えば出勤時間9:45→10:00に繰り上げ、退勤時間18:12→18:00に繰り下げ)"
+        if  format_basic_info(finish_time_by_quarter(f)).to_f > format_basic_info(@attendance.started_at).to_f
+          if @attendance.update_attributes(finished_at: finish_time_by_quarter(f))
+            flash[:info] = "おつかれさまでした。"
+          else
+            flash[:danger] = UPDATE_ERROR_MSG
+          end
+        else
+          flash[:danger] = "退勤時間を出勤時間より遅くしてください。翌日にチェックを入れた状態で残業申請をして承認をもらっていれば、翌日の指定勤務開始時間未満であれば可。(出勤時間、退勤時間は15分毎に自動変換。例えば出勤時間9:45→10:00に繰り上げ、退勤時間18:12→18:00に繰り下げ)"
+        end
       end
     end
     redirect_to @user
@@ -43,15 +54,16 @@ class AttendancesController < ApplicationController
   end
 
   def update_overtime_request
+    @attendance.update_attributes!(overtime_superior_id: @attendance.overtime_superior_confirmation)
     overtime_request_params
     if params[:attendance][:scheduled_end_time_temporary].present? && params[:attendance][:work_details_temporary].present? && params[:attendance][:overtime_superior_confirmation].present?
       superior = User.find(params[:attendance][:overtime_superior_confirmation])
       if params[:attendance][:next_day] == "0"
         if format_basic_info(finish_time_by_quarter(params[:attendance][:scheduled_end_time_temporary].in_time_zone)).to_f > format_basic_info(current_user.designated_work_end_time).to_f
           @attendance.update_attributes!(overtime_request_params)
-          @attendance.update_attributes(overtime_status: "#{superior.name}に残業申請中",
-                                       scheduled_end_time_temporary: finish_time_by_quarter(@attendance.scheduled_end_time_temporary),
-                                       overtime_request: "1"
+          @attendance.update_attributes!(overtime_status: "#{superior.name}に残業申請中",
+                                         scheduled_end_time_temporary: finish_time_by_quarter(@attendance.scheduled_end_time_temporary),
+                                         overtime_request: "1"
                                       )
           flash[:success] = "残業申請しました。"
         else
@@ -62,7 +74,8 @@ class AttendancesController < ApplicationController
           @attendance.update_attributes!(overtime_request_params)
           @attendance.update_attributes(overtime_status: "#{superior.name}に残業申請中",
                                        scheduled_end_time_temporary: finish_time_by_quarter(@attendance.scheduled_end_time_temporary),
-                                       overtime_request: "1"
+                                       overtime_request: "1",
+                                       
                                       )
           flash[:success] = "残業申請しました。"
         else
@@ -85,16 +98,24 @@ class AttendancesController < ApplicationController
         overtime_notice_params.each do |id, item|
           attendance = Attendance.find(id)
           if item[:overtime_check] == "承認"
+            
             attendance.update_attributes!(item)
+            if attendance.next_day == "1"
+              attendance.update_attributes!(next_overtime_or_one_month: "1")
+            elsif attendance.next_day == "0"
+              attendance.update_attributes!(next_overtime_or_one_month: "0")
+            end
             attendance.update_attributes!(scheduled_end_time: attendance.scheduled_end_time_temporary,
                                           work_details: attendance.work_details_temporary,
-                                          next_day: nil,
                                           work_details_temporary: nil,
                                           scheduled_end_time_temporary: nil,
                                           overtime_request: nil,
                                           overtime_result: attendance.overtime_result_temporary,
                                           overtime_result_temporary: nil,
-                                          overtime_status: "#{current_user.name}に残業を承認された。")
+                                          overtime_status: "#{current_user.name}に残業を承認された。",
+                                          overtime_superior_id: current_user.id
+                                          )
+            
           elsif item[:overtime_check] == "否認"
             attendance.update_attributes!(item)
             if attendance.scheduled_end_time.present?
@@ -103,13 +124,18 @@ class AttendancesController < ApplicationController
                                             next_day: nil,
                                             overtime_request: nil,
                                             overtime_result_temporary: nil,
-                                            overtime_status: "#{current_user.name}に残業を否認された。(前回分は承認済み。)")
+                                            overtime_status: "#{current_user.name}に残業を否認された。(前回申請分は#{User.find(attendance.overtime_superior_id).name}から承認済み。)",
+                                            overtime_superior_id: attendance.overtime_superior_id,
+                                            overtime_superior_confirmation: nil)
             else
               attendance.update_attributes!(scheduled_end_time_temporary: nil,
                                             work_details_temporary: nil,
+                                            next_day: nil,
                                             overtime_request: nil,
                                             overtime_result_temporary: nil,
                                             overtime_status: "#{current_user.name}に残業を否認されました。",
+                                            overtime_superior_id: attendance.overtime_superior_id,
+                                            overtime_superior_confirmation: nil,
                                             )
             end
           end
@@ -137,6 +163,7 @@ class AttendancesController < ApplicationController
         one_month_request_params.each do |id, item|
           if item[:one_month_superior_confirmation].present?
           attendance = Attendance.find(id)
+          attendance.update_attributes!(one_month_superior_id: attendance.one_month_superior_confirmation)
           attendance.update_attributes!(item)
            attendance.update_attributes!(one_month_request: "1",
                                          one_month_status: "#{User.find(item[:one_month_superior_confirmation]).name}にへ勤怠変更申請中。",
@@ -167,6 +194,11 @@ class AttendancesController < ApplicationController
       one_month_notice_params.each do |id, item|
         attendance = Attendance.find(id)
         if item[:one_month_check] == "承認"
+          if attendance.next_day_one_month == "1"
+            attendance.update_attributes!(next_overtime_or_one_month: "1")
+          elsif attendance.next_day_one_month == "0"
+            attendance.update_attributes!(next_overtime_or_one_month: "0")
+          end
           s = attendance.started_at.present? ? attendance.started_at : nil
           f = attendance.finished_at.present? ? attendance.finished_at : nil
           attendance.update_attributes!(before_started_at: s,
@@ -182,15 +214,27 @@ class AttendancesController < ApplicationController
                                         # one_month_superior_confirmation: nil,
                                         one_month_approval_changed: "1",
                                         one_month_approval_day: Date.current,
-                                        one_month_status: "#{current_user.name}が勤怠編集を承認しました。")
+                                        one_month_status: "#{current_user.name}が勤怠編集を承認しました。",
+                                        one_month_superior_id: attendance.one_month_superior_confirmation)
+                                        
         elsif item[:one_month_check] == "否認"
-          attendance.update_attributes!(started_at_temporary: nil,
-                                        finished_at_temporary: nil,
-                                        note_temporary: nil,
-                                        one_month_request: nil,
-                                        next_day_one_month: nil,
-                                        # one_month_superior_confirmation: nil,
-                                        one_month_status: "#{current_user.name}が勤怠編集を否認しました。")
+          if attendance.one_month_superior_id.present?
+            attendance.update_attributes!(started_at_temporary: nil,
+                                          finished_at_temporary: nil,
+                                          note_temporary: nil,
+                                          one_month_request: nil,
+                                          next_day_one_month: nil,
+                                          one_month_superior_confirmation: nil,
+                                          one_month_status: "#{current_user.name}が勤怠編集を否認しました。（前回申請分は#{User.find(attendance.one_month_superior_id).name}から承認済み）")
+          else attendance.started_at.nil?
+            attendance.update_attributes!(started_at_temporary: nil,
+                                          finished_at_temporary: nil,
+                                          note_temporary: nil,
+                                          one_month_request: nil,
+                                          next_day_one_month: nil,
+                                          one_month_superior_confirmation: nil,
+                                          one_month_status: "#{current_user.name}が勤怠編集を否認しました。")                                
+          end
         end
       end
       flash[:success] = "勤怠編集を更新しました。"
@@ -264,7 +308,17 @@ class AttendancesController < ApplicationController
 
   def log
     @user = User.find(params[:user_id])
-    @attendances = Attendance.where(one_month_approval_changed: "1", worked_on: $first_day..$last_day)
+   
+    if params["select_year(1i)"].present? && params["select_month(2i)"].present? && params["select_month(3i)"].present?
+      search_day = params["select_year(1i)"] + "-" +
+        format("%02d", params["select_month(2i)"]) + "-" +
+        format("%02d", params["select_month(3i)"])
+      @first_day = search_day.to_date.beginning_of_month
+    else
+      @first_day = Date.today.to_date.beginning_of_month
+    end
+    @last_day = @first_day.end_of_month
+    @attendances = @user.attendances.where(one_month_approval_changed: "1", worked_on: @first_day..@last_day).order(worked_on: "ASC")
   end
   
   private
@@ -295,12 +349,6 @@ class AttendancesController < ApplicationController
     
     def one_month_notice_params
       params.require(:user).permit(attendances: [:one_month_check, :one_month_change])[:attendances]
-    end
-    
-    def only_superior
-      unless current_user.superior?
-        redirect_to root_url
-      end
     end
     
     def final_one_month_request_params
