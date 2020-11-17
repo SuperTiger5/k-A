@@ -48,9 +48,7 @@ module UsersHelper
   
   def difference(day)
     if day.next_overtime_or_one_month == "1" 
-      x = format("%.2f", 24 + format_basic_info(day.finished_at).to_f - format_basic_info(day.started_at).to_f) 
-      text = "#{x}\n翌日にチェックあり"
-      simple_format text
+      format("%.2f", 24 + format_basic_info(day.finished_at).to_f - format_basic_info(day.started_at).to_f) 
     else
       format("%.2f", format_basic_info(day.finished_at).to_f - format_basic_info(day.started_at).to_f)
     end

@@ -2,11 +2,11 @@ require 'csv'
 
 class UsersController < ApplicationController
   before_action :set_user, only: [:show, :show_check, :destroy, :edit, :update, :edit_basic_info, :update_basic_info]
-  before_action :logged_in_user, only: [:show, :show_check, :index, :destroy, :edit, :update]
+  before_action :logged_in_user, except: [:new, :create]
   before_action :admin_user, only: [:index, :destroy, :working_users]
-  before_action :correct_user, only: [:edit, :update]
-  
-  before_action :set_one_month, only: [:show]
+  before_action :correct_user_only_view, only: :show
+  before_action :admin_user_or_correct_user, only: :edit
+  before_action :set_one_month, only: :show
   
   def new
     @user = User.new
@@ -24,7 +24,7 @@ class UsersController < ApplicationController
   end
   
   def index
-    @users = User.all
+    @users = User.where.not(admin: true)
   end
 
   

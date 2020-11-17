@@ -100,7 +100,6 @@
             <% if current_user?(@user) %>
               <%= link_to "残業申請", edit_overtime_request_user_attendance_path(@user, day), remote: true, class: "btn btn-primary" %>
             <% end %>
-            <%= link_to "時間削除", d_user_attendance_path(current_user, day), method: :delete, class: "btn btn-danger" %>
           </td>
           <td><%= l(day.worked_on, format: :short) %></td>
           <td class = "<%= sunday_or_saturday_color(day) %>"><%= $days_of_the_week[day.worked_on.wday] %></td>
@@ -118,7 +117,14 @@
           <td></td>
           <td>
             <% if day.started_at.present? && day.finished_at.present? %>
-              <%= stay_times = difference(day) %>
+              
+              <% if day.next_overtime_or_one_month == "1" %>
+                <% stay_times = difference(day) %>
+                <% text = "#{stay_times}\n翌日にチェックあり" %>
+                <%= simple_format text %>
+              <% else %>
+                <%= stay_times = difference(day) %>
+              <% end %>
               <% @total_stay_times_one_month = @total_stay_times_one_month.to_f + stay_times.to_f %>
             <% end %>
           </td>

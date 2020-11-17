@@ -13,8 +13,8 @@ class ApplicationController < ActionController::Base
   def logged_in_user
     unless logged_in?
       store_location
-        flash[:danger] = "ログインしてください。"
-        redirect_to login_url
+      flash[:danger] = "ログインしてください。"
+      redirect_to login_url
     end
   end
   
@@ -24,17 +24,23 @@ class ApplicationController < ActionController::Base
       redirect_to root_url
     end
   end
-      
   
-  def except_admin
-    if @user.admin?
+  def admin_user_or_correct_user
+    unless (current_user.admin? || current_user?(@user)) && !@user.admin?
       flash[:danger] = "権限がありません。"
-      redirect_to root_url 
+      redirect_to root_url
     end
   end
   
-  def correct_user
-    unless current_user?(@user)
+  def attendance_update
+    unless current_user?(@user) 
+      flash[:danger] = "権限がありません。"
+      redirect_to root_url
+    end
+  end
+  
+  def correct_user_only_view
+    unless (current_user.admin? || current_user.superior? || current_user?(@user)) && !@user.admin? 
       flash[:danger] = "権限がありません。"
       redirect_to root_url 
     end
