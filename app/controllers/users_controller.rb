@@ -1,7 +1,7 @@
 require 'csv'
 
 class UsersController < ApplicationController
-  before_action :set_user, only: [:show, :show_check, :destroy, :edit, :update, :edit_basic_info, :update_basic_info]
+  before_action :set_user, only: [:show, :destroy, :edit, :update, :edit_basic_info, :update_basic_info]
   before_action :logged_in_user, except: [:new, :create]
   before_action :admin_user, only: [:index, :destroy, :working_users]
   before_action :correct_user_only_view, only: :show
@@ -106,10 +106,6 @@ class UsersController < ApplicationController
     
     def user_params
       params.require(:user).permit(:name, :email, :affiliation, :employee_number, :uid, :basic_work_time, :designated_work_start_time, :designated_work_end_time, :password)
-    end
-    
-    def basic_info_params
-      params.require(:user).permit(:basic_time, :basic_work_time)
     end
     
 end
